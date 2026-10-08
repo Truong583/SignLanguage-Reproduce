@@ -30,6 +30,9 @@ class SignModel(nn.Module):
     def __init__(self, cfg, vocab, initialize=True):
         super().__init__()
         self.cfg, self.vocab = cfg, vocab
+        self.activation_offload=cfg.get('activation_offload','cpu')
+        if self.activation_offload not in ('none','cpu'):
+            raise ValueError('activation_offload must be none or cpu')
         self.input_kind = cfg.get('input_kind','rgb')
         hidden = cfg.get('hidden_size',1024)
         if self.input_kind == 'rgb':
@@ -85,6 +88,14 @@ class SignModel(nn.Module):
                 self.translation.config.use_cache=False
 
     def features(self, video, lengths):
+        # Exact tensor copies, no resampling or forward recomputation (BatchNorm
+        # statistics and dropout are computed once). Trade host RAM for VRAM.
+        if self.activation_offload=='cpu' and video.is_cuda and self.training and torch.is_grad_enabled():
+            with torch.autograd.graph.save_on_cpu(pin_memory=False):
+                return self._features(video,lengths)
+        return self._features(video,lengths)
+
+    def _features(self, video, lengths):
         if self.backbone is not None:
             b,t,c,h,w = video.shape
             x = self.backbone(video.transpose(1,2)).reshape(b,t,self.input_dim).transpose(1,2)

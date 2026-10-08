@@ -6,6 +6,7 @@ import math
 import os
 from pathlib import Path,PurePosixPath
 import re
+import signal
 import time
 from scripts.deployment import atomic_json
 from scripts.diagnostics import redact,read_tail
@@ -96,11 +97,18 @@ def main():
        WANDB_DIR=str(spool),WANDB_CACHE_DIR=str(spool/'cache'),WANDB_DATA_DIR=str(spool/'staging'),
        WANDB_CONFIG_DIR='/tmp/wandb-config',WANDB_ERROR_REPORTING='false')
     import wandb
+    def stop(*_): raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM,stop)
+    observe(root,spool,cfg,key,wandb)
+
+
+def observe(root,spool,cfg,key,wandb):
     state_file=spool/'cursor.json'
     state=json.loads(state_file.read_text()) if state_file.exists() else {}
     # Separate sessions prevent resuming a previously marked crashed W&B step counter.
     run=None
-    while True:
+    try:
+      while True:
         try:
             # Recheck visibility before sending anything, including after reconnect.
             require_private(cfg['wandb_entity'],cfg['wandb_project'],key)
@@ -131,6 +139,16 @@ def main():
             print('TELEMETRY unavailable: '+message,flush=True)
             # Source logs/metrics remain on disk and are scanned again on recovery.
         time.sleep(30)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Docker stops the observer on a source switch. Explicitly finish the
+        # SDK session, otherwise the old dashboard run can remain Running.
+        if run is not None:
+            try: run.finish(exit_code=0)
+            except Exception as exc:
+                print('TELEMETRY finish unavailable: '+redact(str(exc)).replace(key,'[REDACTED]'),flush=True)
+        atomic_json(spool/'health.json',{'status':'stopped','url':run.url if run is not None else None})
 
 
 if __name__=='__main__': main()

@@ -72,7 +72,7 @@ WORKERS=2
 EPOCHS=50
 SESSION_MINUTES=600  # entire notebook session, including preparation
 ONLY_EXPERIMENTS=""  # empty: all 68; e.g. "main,modules_none"
-CAMPAIGN_NAME="phoenix14t_cslr_suite_seed0"
+CAMPAIGN_NAME="phoenix14t_cslr_suite_cpu_storage_v11_seed0"
 NOTEBOOK_START=time.monotonic()
 '''
         if platform=='Colab':
@@ -126,7 +126,11 @@ project_root=PROJECT_ROOT
         cells.append({'cell_type':'markdown','metadata':{'id':'local-monitoring-note'},'source':[
             '## Bản cập nhật không CI\n',
             'Notebook vẫn dùng Run all và thư mục Drive chung; không cần thêm secret W&B. Khi code đổi, thay ZIP mới trong Drive trước phiên chạy mới. Không chạy Colab và Kaggle đồng thời vào cùng chiến dịch.\n',
-            'Máy Linux của cô có luồng riêng: chạy `setup_machine.py` một lần, sau đó `run.py` để tự lấy bản sửa từ GitHub Private và gửi lỗi lên W&B. Xem `docs/MAY_CO_VA_LAPTOP.md`. Cả ba nơi dùng cùng catalog PHOENIX14T–CSLR; chưa có số đo thật để khẳng định tái lập paper.\n']})
+            'V11 chuyển activation CUDA train sang RAM để giảm VRAM; không đổi nhãn, frame hoặc batch. Tốn thêm RAM và có thể chậm hơn. Tên CAMPAIGN_NAME mặc định mới giữ kết quả/checkpoint các bản cũ; không dùng tên chiến dịch cũ với fingerprint code mới.\n',
+            'Máy Linux của cô có luồng riêng: chạy `setup_machine.py` một lần, sau đó `run.py` để tự lấy bản sửa từ GitHub và gửi lỗi lên W&B. Xem `docs/MAY_CO_VA_LAPTOP.md`. Cả ba nơi dùng cùng catalog PHOENIX14T–CSLR; chưa có số đo thật để khẳng định tái lập paper.\n']})
+        for cell in cells:
+            if cell['cell_type']=='markdown':
+                source(cell,''.join(cell['source']).replace('runs/phoenix14t_cslr_suite_seed0','runs/'+ 'phoenix14t_cslr_suite_cpu_storage_v11_seed0'))
         for i,cell in enumerate(cells):
             if cell['cell_type']=='code' and not ''.join(cell['source']).lstrip().startswith('%'):
                 compile(''.join(cell['source']),f'{platform}:cell{i}','exec')

@@ -181,6 +181,7 @@ def main():
                    'status':'reconstruction; NOT verified paper reproduction','upstream_commit':'af5e8475d755b9d2e92c0142c8b7084651c3a4ee'})
         write_json(output/'vocab.json',vocab)
         print(json.dumps(plan),flush=True)
+        print('Activation storage: '+(raw.activation_offload if use_cuda else 'none (CPU execution)'),flush=True)
     dataset=SignDataset(cfg['train'],cfg['data_root'],train=True,seed=seed,input_kind=cfg.get('input_kind','rgb'),target_field=cfg.get('target_field','gloss'))
     accumulation=plan['accumulation']
     store=make_store(cfg.get('persistence')) if rank==0 else None
@@ -224,7 +225,13 @@ def main():
         for step,batch in enumerate(loader):
             sync=(step+1)%accumulation==0
             with model.no_sync() if world>1 and not sync else nullcontext():
-                with amp(): loss=model(batch['video'].to(device,non_blocking=True),batch['lengths'],batch['rows'])
+                try:
+                    with amp(): loss=model(batch['video'].to(device,non_blocking=True),batch['lengths'],batch['rows'])
+                except torch.OutOfMemoryError:
+                    print('CUDA_OOM sample details: '+json.dumps({'ids':[row['id'] for row in batch['rows']],
+                          'video_shape':list(batch['video'].shape),'padded_lengths':batch['lengths'].tolist(),
+                          'activation_storage':raw.activation_offload}),flush=True)
+                    raise
                 finite=torch.isfinite(loss.detach()).to(torch.int32)
                 if world>1: dist.all_reduce(finite,op=dist.ReduceOp.MIN)
                 if not finite.item(): raise FloatingPointError('Nonfinite loss: stopping all ranks')

@@ -1,5 +1,5 @@
 {
-  "version": "phoenix14t-cslr-preflight-training-length-v10",
+  "version": "phoenix14t-cslr-cpu-activation-storage-v11",
   "experiments": 68,
   "quantitative_configurations": 67,
   "qualitative_reference_configurations": 1,

@@ -58,6 +58,14 @@ Nếu service đang hoạt động và pipeline vừa dừng do lỗi này, khô
 
 ## Khi mất mạng hoặc kết nối W&B bị ngắt
 
+### CUDA out of memory sau khi bắt đầu train
+
+V11 chuyển các tensor trung gian cần cho backward trong bước trích xuất đặc trưng sang RAM bằng PyTorch save_on_cpu. Không thay batch, độ phân giải, nhãn, frame, dropout hoặc graph K. Tốn thêm RAM và truyền dữ liệu CPU↔GPU; tốc độ có thể giảm. Không đảm bảo mọi clip đều vừa VRAM/RAM trên mọi máy.
+
+Nếu service đang chờ sau lỗi v10, supervisor lấy v11 và tự tạo campaign mới theo DEPLOYMENT_POLICY.json do fingerprint code đổi. Không cần bấm Stop run trên W&B hoặc chạy run.py thêm. Archive, dữ liệu giải nén, weights và checkpoint cũ được giữ. Log lượt mới phải có release v11 và `Activation storage: cpu`. Nếu lại OOM, log bổ sung ID mẫu và video_shape giúp chẩn đoán chính xác.
+
+Các run supervisor là phiên giám sát CPU. Trạng thái Running không chứng minh GPU đang train: kiểm tra `status.json/status`, `supervisor.json/outcome` và heartbeat mới nhất trong Summary. V11 thêm xử lý SIGTERM và SDK finish để kết thúc phiên observer khi cập nhật; phiên cũ v9/v10 có thể còn trạng thái lỗi thời. Không thể bảo đảm gửi trạng thái cuối nếu bị kill cứng hoặc mất mạng.
+
 - Đang tải: timeout được thử lại tối đa8 lần, giữ `.part`. Server hỗ trợ Range thì tải tiếp; nếu không thì phải tải lại archive. Hết giới hạn thì chờ, không coi là lỗi mô hình. Gửi log nếu cần xử lý; không xóa `.part`.
 - Đã đủ data, weights và image: train container vốn tắt mạng nên tiếp tục được. Host dùng lại image đã dựng; không gọi registry để dựng lại nếu tag đã có.
 - W&B/kiểm tra GitHub tạm thời không truy cập được. Log/metrics gốc vẫn ở runs. Khi mạng trở lại observer thử kết nối lại, gửi log hiện tại và scan lịch sử. Khi observer được khởi động lại, history được đọc lại cho session mới để tránh bỏ sót metrics chỉ nằm trong bộ đệm offline của session cũ. Chỉ các scalar và log được gửi, không video/checkpoint/key.
