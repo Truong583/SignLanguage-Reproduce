@@ -1,0 +1,18 @@
+dataset_root: /data1/gsw/PHOENIX-2014-T-release-v3/PHOENIX-2014-T/
+
+dev: ../Dataprocessing/phoenix-2014t/phoenix-2014t.dev
+test: ../Dataprocessing/phoenix-2014t/phoenix-2014t.test
+train: ../Dataprocessing/phoenix-2014t/phoenix-2014t.train
+
+pretrained_model_name_or_path: ../Dataprocessing/phoenix-2014t
+GlossEmbedding:
+  gloss2embed_file: ../Dataprocessing/phoenix-2014t/gloss_embeddings.bin
+GlossTokenizer:
+  gloss2id_file: ../Dataprocessing/phoenix-2014t/gloss2idsMy14t.pkl
+  src_lang: de_DE
+TextTokenizer:
+  pretrained_model_name_or_path: ../Dataprocessing/phoenix-2014t/
+  pruneids_file: ../Dataprocessing/phoenix-2014t/map_ids.pkl
+  tgt_lang: de_DE
+
+label_smoothing: 0.2

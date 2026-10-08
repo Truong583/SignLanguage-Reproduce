@@ -1,0 +1,1176 @@
+[
+  {
+    "id": "main",
+    "source": "Table 5 / Table 1 full",
+    "changes": {},
+    "paper_dev_wer": 16.7,
+    "paper_test_wer": 19.0,
+    "assumption": null,
+    "paper_dev_del": 4.9,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 4.9,
+    "paper_test_ins": 2.9
+  },
+  {
+    "id": "modules_none",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "paper_dev_wer": 22.3,
+    "paper_test_wer": 22.2,
+    "assumption": null,
+    "paper_dev_del": 8.4,
+    "paper_dev_ins": 2.5,
+    "paper_test_del": 8.1,
+    "paper_test_ins": 2.7
+  },
+  {
+    "id": "only_lsg1",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "paper_dev_wer": 19.2,
+    "paper_test_wer": 21.0,
+    "assumption": null,
+    "paper_dev_del": 5.6,
+    "paper_dev_ins": 2.2,
+    "paper_test_del": 4.8,
+    "paper_test_ins": 2.3
+  },
+  {
+    "id": "only_tsg1",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    "paper_dev_wer": 19.6,
+    "paper_test_wer": 21.5,
+    "assumption": null,
+    "paper_dev_del": 5.6,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 5.1,
+    "paper_test_ins": 2.5
+  },
+  {
+    "id": "only_hsg1",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    "paper_dev_wer": 19.9,
+    "paper_test_wer": 21.6,
+    "assumption": null,
+    "paper_dev_del": 6.7,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 6.2,
+    "paper_test_ins": 3.1
+  },
+  {
+    "id": "only_lsg2",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    "paper_dev_wer": 19.3,
+    "paper_test_wer": 20.8,
+    "assumption": null,
+    "paper_dev_del": 5.3,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 5.8,
+    "paper_test_ins": 2.0
+  },
+  {
+    "id": "only_tsg2",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    "paper_dev_wer": 19.5,
+    "paper_test_wer": 21.2,
+    "assumption": null,
+    "paper_dev_del": 6.6,
+    "paper_dev_ins": 1.7,
+    "paper_test_del": 5.4,
+    "paper_test_ins": 2.4
+  },
+  {
+    "id": "only_hsg2",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    "paper_dev_wer": 19.4,
+    "paper_test_wer": 21.5,
+    "assumption": null,
+    "paper_dev_del": 6.2,
+    "paper_dev_ins": 2.9,
+    "paper_test_del": 5.9,
+    "paper_test_ins": 3.6
+  },
+  {
+    "id": "modules_lsg1_lsg2",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        true,
+        false,
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    "paper_dev_wer": 18.7,
+    "paper_test_wer": 20.6,
+    "assumption": null,
+    "paper_dev_del": 5.1,
+    "paper_dev_ins": 2.3,
+    "paper_test_del": 5.2,
+    "paper_test_ins": 1.7
+  },
+  {
+    "id": "modules_tsg1_tsg2",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    "paper_dev_wer": 18.6,
+    "paper_test_wer": 20.2,
+    "assumption": null,
+    "paper_dev_del": 4.3,
+    "paper_dev_ins": 1.8,
+    "paper_test_del": 5.5,
+    "paper_test_ins": 1.7
+  },
+  {
+    "id": "modules_hsg1_hsg2",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        false,
+        true,
+        false,
+        false,
+        true
+      ]
+    },
+    "paper_dev_wer": 17.8,
+    "paper_test_wer": 19.6,
+    "assumption": null,
+    "paper_dev_del": 6.1,
+    "paper_dev_ins": 2.3,
+    "paper_test_del": 5.3,
+    "paper_test_ins": 2.9
+  },
+  {
+    "id": "modules_lsg1_tsg1_hsg1",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        true,
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    "paper_dev_wer": 17.1,
+    "paper_test_wer": 19.7,
+    "assumption": null,
+    "paper_dev_del": 5.3,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": 5.0,
+    "paper_test_ins": 3.0
+  },
+  {
+    "id": "modules_lsg2_tsg2_hsg2",
+    "source": "Table 1",
+    "changes": {
+      "module_mask": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    "paper_dev_wer": 17.4,
+    "paper_test_wer": 19.6,
+    "assumption": null,
+    "paper_dev_del": 5.7,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 5.1,
+    "paper_test_ins": 2.9
+  },
+  {
+    "id": "order_hsg-lsg-tsg",
+    "source": "Table 13b",
+    "changes": {
+      "module_order": "hsg-lsg-tsg"
+    },
+    "paper_dev_wer": 16.8,
+    "paper_test_wer": 19.6,
+    "assumption": null,
+    "paper_dev_del": 5.1,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": 5.0,
+    "paper_test_ins": 3.2
+  },
+  {
+    "id": "order_hsg-tsg-lsg",
+    "source": "Table 13b",
+    "changes": {
+      "module_order": "hsg-tsg-lsg"
+    },
+    "paper_dev_wer": 16.9,
+    "paper_test_wer": 19.5,
+    "assumption": null,
+    "paper_dev_del": 5.1,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 4.9,
+    "paper_test_ins": 3.2
+  },
+  {
+    "id": "order_lsg-hsg-tsg",
+    "source": "Table 13b",
+    "changes": {
+      "module_order": "lsg-hsg-tsg"
+    },
+    "paper_dev_wer": 17.2,
+    "paper_test_wer": 19.8,
+    "assumption": null,
+    "paper_dev_del": 6.3,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": 4.8,
+    "paper_test_ins": 2.7
+  },
+  {
+    "id": "order_lsg-tsg-hsg",
+    "source": "Table 13b",
+    "changes": {
+      "module_order": "lsg-tsg-hsg"
+    },
+    "paper_dev_wer": 17.1,
+    "paper_test_wer": 19.0,
+    "assumption": null,
+    "paper_dev_del": 5.4,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": 5.0,
+    "paper_test_ins": 2.7
+  },
+  {
+    "id": "order_tsg-hsg-lsg",
+    "source": "Table 13b",
+    "changes": {
+      "module_order": "tsg-hsg-lsg"
+    },
+    "paper_dev_wer": 16.9,
+    "paper_test_wer": 19.3,
+    "assumption": null,
+    "paper_dev_del": 5.5,
+    "paper_dev_ins": 1.8,
+    "paper_test_del": 5.0,
+    "paper_test_ins": 3.2
+  },
+  {
+    "id": "types_dense_sparse_fixed",
+    "source": "Table 13a",
+    "changes": {
+      "lsg_type": "dense",
+      "tsg_type": "sparse",
+      "hsg_type": "fixed",
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 16.7,
+    "paper_test_wer": 19.0,
+    "assumption": "Paper says one LSG/TSG/HSG but does not identify stage; reconstructed at patch16. Dynamic HSG uses KNN over projected high+low nodes.",
+    "paper_dev_del": 4.9,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 4.9,
+    "paper_test_ins": 2.9
+  },
+  {
+    "id": "types_dense_sparse_dynamic",
+    "source": "Table 13a",
+    "changes": {
+      "lsg_type": "dense",
+      "tsg_type": "sparse",
+      "hsg_type": "dynamic",
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 18.1,
+    "paper_test_wer": 20.1,
+    "assumption": "Paper says one LSG/TSG/HSG but does not identify stage; reconstructed at patch16. Dynamic HSG uses KNN over projected high+low nodes.",
+    "paper_dev_del": 5.1,
+    "paper_dev_ins": 2.2,
+    "paper_test_del": 5.1,
+    "paper_test_ins": 2.1
+  },
+  {
+    "id": "types_dense_dense_fixed",
+    "source": "Table 13a",
+    "changes": {
+      "lsg_type": "dense",
+      "tsg_type": "dense",
+      "hsg_type": "fixed",
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 19.3,
+    "paper_test_wer": 20.1,
+    "assumption": "Paper says one LSG/TSG/HSG but does not identify stage; reconstructed at patch16. Dynamic HSG uses KNN over projected high+low nodes.",
+    "paper_dev_del": 4.9,
+    "paper_dev_ins": 2.9,
+    "paper_test_del": 5.2,
+    "paper_test_ins": 2.6
+  },
+  {
+    "id": "types_dense_dense_dynamic",
+    "source": "Table 13a",
+    "changes": {
+      "lsg_type": "dense",
+      "tsg_type": "dense",
+      "hsg_type": "dynamic",
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 19.9,
+    "paper_test_wer": 21.8,
+    "assumption": "Paper says one LSG/TSG/HSG but does not identify stage; reconstructed at patch16. Dynamic HSG uses KNN over projected high+low nodes.",
+    "paper_dev_del": 5.6,
+    "paper_dev_ins": 3.5,
+    "paper_test_del": 5.5,
+    "paper_test_ins": 2.6
+  },
+  {
+    "id": "types_sparse_sparse_fixed",
+    "source": "Table 13a",
+    "changes": {
+      "lsg_type": "sparse",
+      "tsg_type": "sparse",
+      "hsg_type": "fixed",
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 19.0,
+    "paper_test_wer": 20.2,
+    "assumption": "Paper says one LSG/TSG/HSG but does not identify stage; reconstructed at patch16. Dynamic HSG uses KNN over projected high+low nodes.",
+    "paper_dev_del": 5.3,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 5.4,
+    "paper_test_ins": 2.1
+  },
+  {
+    "id": "types_sparse_sparse_dynamic",
+    "source": "Table 13a",
+    "changes": {
+      "lsg_type": "sparse",
+      "tsg_type": "sparse",
+      "hsg_type": "dynamic",
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 19.1,
+    "paper_test_wer": 21.1,
+    "assumption": "Paper says one LSG/TSG/HSG but does not identify stage; reconstructed at patch16. Dynamic HSG uses KNN over projected high+low nodes.",
+    "paper_dev_del": 5.0,
+    "paper_dev_ins": 1.9,
+    "paper_test_del": 5.8,
+    "paper_test_ins": 2.1
+  },
+  {
+    "id": "types_sparse_dense_fixed",
+    "source": "Table 13a",
+    "changes": {
+      "lsg_type": "sparse",
+      "tsg_type": "dense",
+      "hsg_type": "fixed",
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 20.2,
+    "paper_test_wer": 20.6,
+    "assumption": "Paper says one LSG/TSG/HSG but does not identify stage; reconstructed at patch16. Dynamic HSG uses KNN over projected high+low nodes.",
+    "paper_dev_del": 5.3,
+    "paper_dev_ins": 2.6,
+    "paper_test_del": 5.5,
+    "paper_test_ins": 2.9
+  },
+  {
+    "id": "types_sparse_dense_dynamic",
+    "source": "Table 13a",
+    "changes": {
+      "lsg_type": "sparse",
+      "tsg_type": "dense",
+      "hsg_type": "dynamic",
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 20.7,
+    "paper_test_wer": 21.5,
+    "assumption": "Paper says one LSG/TSG/HSG but does not identify stage; reconstructed at patch16. Dynamic HSG uses KNN over projected high+low nodes.",
+    "paper_dev_del": 6.0,
+    "paper_dev_ins": 2.1,
+    "paper_test_del": 6.0,
+    "paper_test_ins": 2.5
+  },
+  {
+    "id": "local_k_1_2",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        2,
+        4
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_1_4",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        4,
+        4
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_1_5",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        5,
+        4
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_1_6",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        6,
+        4
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_1_7",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        7,
+        4
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_1_8",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        8,
+        4
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_1_9",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        9,
+        4
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_2_2",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        3,
+        2
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_2_3",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        3,
+        3
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_2_5",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        3,
+        5
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_2_6",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        3,
+        6
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_2_7",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        3,
+        7
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_2_8",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        3,
+        8
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "local_k_2_9",
+    "source": "Figure 6",
+    "changes": {
+      "local_k": [
+        3,
+        9
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_1_7",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        7,
+        49
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_1_21",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        21,
+        49
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_1_35",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        35,
+        49
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_1_63",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        63,
+        49
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_1_77",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        77,
+        49
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_1_91",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        91,
+        49
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_2_7",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        49,
+        7
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_2_21",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        49,
+        21
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_2_35",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        49,
+        35
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_2_63",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        49,
+        63
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_2_77",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        49,
+        77
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "temporal_k_2_91",
+    "source": "Figure 6",
+    "changes": {
+      "temporal_k": [
+        49,
+        91
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Only one K varies; other three fixed. Figure values are not digitized into numeric targets.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "distance_cosine",
+    "source": "Table 14b",
+    "changes": {
+      "distance": "cosine"
+    },
+    "paper_dev_wer": 17.4,
+    "paper_test_wer": null,
+    "assumption": "LSG retains released normalized features/relative-position bias and projection widths; distance changes consistently in LSG/TSG. Exact author distance normalization is not released.",
+    "paper_dev_del": 5.5,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "distance_chebyshev",
+    "source": "Table 14b",
+    "changes": {
+      "distance": "chebyshev"
+    },
+    "paper_dev_wer": 17.3,
+    "paper_test_wer": null,
+    "assumption": "LSG retains released normalized features/relative-position bias and projection widths; distance changes consistently in LSG/TSG. Exact author distance normalization is not released.",
+    "paper_dev_del": 5.1,
+    "paper_dev_ins": 3.2,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "conv_gatv2",
+    "source": "Table 14c",
+    "changes": {
+      "graph_conv": "gatv2"
+    },
+    "paper_dev_wer": 17.0,
+    "paper_test_wer": null,
+    "assumption": "GATv2 single head, SAGE mean aggregation. Original hidden widths/head counts and LSG adapters are not released.",
+    "paper_dev_del": 5.1,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "conv_sage",
+    "source": "Table 14c",
+    "changes": {
+      "graph_conv": "sage"
+    },
+    "paper_dev_wer": 17.7,
+    "paper_test_wer": null,
+    "assumption": "GATv2 single head, SAGE mean aggregation. Original hidden widths/head counts and LSG adapters are not released.",
+    "paper_dev_del": 5.9,
+    "paper_dev_ins": 1.9,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "conv_gcn",
+    "source": "Table 14c",
+    "changes": {
+      "graph_conv": "gcn"
+    },
+    "paper_dev_wer": 17.7,
+    "paper_test_wer": null,
+    "assumption": "GATv2 single head, SAGE mean aggregation. Original hidden widths/head counts and LSG adapters are not released.",
+    "paper_dev_del": 5.5,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "backbone_swin_t",
+    "source": "Table 14a",
+    "changes": {
+      "backbone": "swin_t"
+    },
+    "paper_dev_wer": 45.4,
+    "paper_test_wer": null,
+    "assumption": "Swin-T/PyViG-Tiny ImageNet feature trunks; PyViG size not specified in paper. SA: 8 heads, spatial/crossscale self-attention and adjacent-frame-pair attention.",
+    "paper_dev_del": 16.3,
+    "paper_dev_ins": 1.3,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "backbone_pvig_tiny",
+    "source": "Table 14a",
+    "changes": {
+      "backbone": "pvig_tiny"
+    },
+    "paper_dev_wer": 35.4,
+    "paper_test_wer": null,
+    "assumption": "Swin-T/PyViG-Tiny ImageNet feature trunks; PyViG size not specified in paper. SA: 8 heads, spatial/crossscale self-attention and adjacent-frame-pair attention.",
+    "paper_dev_del": 12.1,
+    "paper_dev_ins": 1.3,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "backbone_sa",
+    "source": "Table 14a",
+    "changes": {
+      "backbone": "sa"
+    },
+    "paper_dev_wer": 39.2,
+    "paper_test_wer": null,
+    "assumption": "Swin-T/PyViG-Tiny ImageNet feature trunks; PyViG size not specified in paper. SA: 8 heads, spatial/crossscale self-attention and adjacent-frame-pair attention.",
+    "paper_dev_del": 15.3,
+    "paper_dev_ins": 0.9,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "patch_8",
+    "source": "Table 14d",
+    "changes": {
+      "graph_scales": [
+        8
+      ]
+    },
+    "paper_dev_wer": 17.4,
+    "paper_test_wer": null,
+    "assumption": "One graph triplet at the corresponding ResNet feature stride; stems and training recipe retained.",
+    "paper_dev_del": 5.4,
+    "paper_dev_ins": 3.0,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "patch_16",
+    "source": "Table 14d",
+    "changes": {
+      "graph_scales": [
+        16
+      ]
+    },
+    "paper_dev_wer": 17.1,
+    "paper_test_wer": null,
+    "assumption": "One graph triplet at the corresponding ResNet feature stride; stems and training recipe retained.",
+    "paper_dev_del": 5.3,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "patch_32",
+    "source": "Table 14d",
+    "changes": {
+      "graph_scales": [
+        32
+      ]
+    },
+    "paper_dev_wer": 17.5,
+    "paper_test_wer": null,
+    "assumption": "One graph triplet at the corresponding ResNet feature stride; stems and training recipe retained.",
+    "paper_dev_del": 5.6,
+    "paper_dev_ins": 2.4,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "stages_8_16_32",
+    "source": "Table 14e",
+    "changes": {
+      "graph_scales": [
+        8,
+        16,
+        32
+      ]
+    },
+    "paper_dev_wer": 17.1,
+    "paper_test_wer": null,
+    "assumption": "Additional early triplets use first-stage K; patch4 HSG bridges conv1 to layer1 across maxpool.",
+    "paper_dev_del": 5.2,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "stages_4_8_16_32",
+    "source": "Table 14e",
+    "changes": {
+      "graph_scales": [
+        4,
+        8,
+        16,
+        32
+      ]
+    },
+    "paper_dev_wer": 17.8,
+    "paper_test_wer": null,
+    "assumption": "Additional early triplets use first-stage K; patch4 HSG bridges conv1 to layer1 across maxpool.",
+    "paper_dev_del": 5.4,
+    "paper_dev_ins": 3.1,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "dropedge_15",
+    "source": "Table 14f",
+    "changes": {
+      "drop_edge": 0.15
+    },
+    "paper_dev_wer": 17.7,
+    "paper_test_wer": null,
+    "assumption": "Independent edge Bernoulli dropout at each training forward in LSG/HSG; LSG masks messages after its edge BatchNorm, before aggregation. No dropout during eval. Author mask schedule is not released.",
+    "paper_dev_del": 6.1,
+    "paper_dev_ins": 1.4,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "dropedge_30",
+    "source": "Table 14f",
+    "changes": {
+      "drop_edge": 0.3
+    },
+    "paper_dev_wer": 17.5,
+    "paper_test_wer": null,
+    "assumption": "Independent edge Bernoulli dropout at each training forward in LSG/HSG; LSG masks messages after its edge BatchNorm, before aggregation. No dropout during eval. Author mask schedule is not released.",
+    "paper_dev_del": 6.0,
+    "paper_dev_ins": 2.0,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  },
+  {
+    "id": "multisigngraph",
+    "source": "Table 3 qualitative reference",
+    "changes": {
+      "module_mask": [
+        true,
+        true,
+        false,
+        true,
+        true,
+        false
+      ]
+    },
+    "paper_dev_wer": null,
+    "paper_test_wer": null,
+    "assumption": "Reconstructed MultiSignGraph reference removes both HSG modules; exact baseline checkpoint is not released. No numeric paper WER is assigned to this qualitative reference.",
+    "paper_dev_del": null,
+    "paper_dev_ins": null,
+    "paper_test_del": null,
+    "paper_test_ins": null
+  }
+]

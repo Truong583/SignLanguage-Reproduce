@@ -1,0 +1,47 @@
+{
+  "pos_embed.py": {
+    "source": "MixSignGraph/modules/gcn_lib/pos_embed.py",
+    "upstream_sha256": "2530a64a9ef0900999d8bcb4125faa2cba7e72a9b2d2c468e0fd9d44894abcb1",
+    "adapted_sha256": "f1fca70e6ca936ad96762b8b3338ebe890dfb3e3c87d478447a956387c61fb85"
+  },
+  "torch_edge.py": {
+    "source": "MixSignGraph/modules/gcn_lib/torch_edge.py",
+    "upstream_sha256": "0faa15b97ecfb1dcbbe0b18ac885f29b5e7a2eb2b8fd0c8eabeed583a2801fcf",
+    "adapted_sha256": "71ce4c17b8dbbeb591ccaa120420e9ffe912f6917f23a396c86bde47ec6c4580"
+  },
+  "torch_nn.py": {
+    "source": "MixSignGraph/modules/gcn_lib/torch_nn.py",
+    "upstream_sha256": "28a9b32f630b0774823c5ff315bdccad4ffd7e1affdb1dadd068e8e39388cff9",
+    "adapted_sha256": "28a9b32f630b0774823c5ff315bdccad4ffd7e1affdb1dadd068e8e39388cff9"
+  },
+  "torch_vertex.py": {
+    "source": "MixSignGraph/modules/gcn_lib/torch_vertex.py",
+    "upstream_sha256": "f46ea54221720d8d0a83d579489607ac980f9fe649012de9f5c846f18b60b3a2",
+    "adapted_sha256": "d28d20940f95979efc2463add300ca782a324e04d776c6758d5826735451c946"
+  },
+  "__init__.py": {
+    "source": "MixSignGraph/modules/gcn_lib/__init__.py",
+    "upstream_sha256": "ae9b25c856c57560b12ebdf334e937ab7ab506fc2c8dd38d797cccb478202b3b",
+    "adapted_sha256": "7991f47ca5d72d03ec0ea499bf73e33bc73b32d72dc2be7fdb3f3bdf07bbf883"
+  },
+  "backbone.py": {
+    "source": "MixSignGraph/modules/resnet.py",
+    "upstream_sha256": "ce05e63e6b9392950c0776f2b34a4071abe0e343afc6f3f431769c70da1ea55d",
+    "adapted_sha256": "d6c1927f3c3418bf615c8cede4a3b6993e352da581a2921bae6c924bd625ae2f"
+  },
+  "tconv.py": {
+    "source": "MixSignGraph/modules/tconv.py",
+    "upstream_sha256": "ed0fe5b859535a436ef23a430e0325401552985b788450a2c1905bceccb68a8f",
+    "adapted_sha256": "5895ed177b47f94c0607fa5eea434ff17f9e3cfb3b142a231631eeada3bc1c4e"
+  },
+  "BiLSTM.py": {
+    "source": "MixSignGraph/modules/BiLSTM.py",
+    "upstream_sha256": "96b2ab490966adc498913934e4db95d82872697b6d58514daba8b856a8040cef",
+    "adapted_sha256": "96b2ab490966adc498913934e4db95d82872697b6d58514daba8b856a8040cef"
+  },
+  "criterions.py": {
+    "source": "MixSignGraph/modules/criterions.py",
+    "upstream_sha256": "febc5cffd300076a32d6aaee282826f4b7e6d3c8c2be0f7ddb82e8fdf4df6ec5",
+    "adapted_sha256": "febc5cffd300076a32d6aaee282826f4b7e6d3c8c2be0f7ddb82e8fdf4df6ec5"
+  }
+}

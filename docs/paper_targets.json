@@ -1,0 +1,10 @@
+{
+  "phoenix14t_cslr": {"source":"Table 5, NeurIPS 2025", "dev":{"wer":16.7},"test":{"wer":19.0}},
+  "phoenix14t_slt": {"source":"Table 2 w/ gloss", "dev":{"rouge":55.77,"bleu4":29.00},"test":{"rouge":53.84,"bleu4":28.97}},
+  "phoenix14t_gfslt": {"source":"Table 2 w/ TCTC", "dev":{"rouge":51.71,"bleu4":24.87},"test":{"rouge":51.14,"bleu4":24.02}},
+  "csl_daily_cslr": {"source":"Table 2 w/ gloss", "dev":{"wer":25.13},"test":{"wer":25.01}},
+  "csl_daily_slt": {"source":"Table 2 w/ gloss", "dev":{"rouge":54.54,"bleu4":25.77},"test":{"rouge":54.67,"bleu4":25.87}},
+  "csl_daily_gfslt": {"source":"Table 2 w/ TCTC", "dev":{"rouge":49.16,"bleu4":20.43},"test":{"rouge":49.93,"bleu4":21.01}},
+  "how2sign_gfslt": {"source":"Table 2 w/ TCTC", "dev":{"rouge":29.24,"bleu4":11.28},"test":{"rouge":28.01,"bleu4":10.41}},
+  "openasl_gfslt": {"source":"Table 2 w/ TCTC", "dev":{"rouge":25.41,"bleu4":8.36},"test":{"rouge":25.71,"bleu4":8.69}}
+}

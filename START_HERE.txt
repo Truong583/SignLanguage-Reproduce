@@ -1,0 +1,17 @@
+MÁY LINUX CỦA CÔ: cấu hình một lần python3 setup_machine.py, sau đó python3 run.py
+LAPTOP: sửa code rồi python publish.py; máy cô tự lấy bản sửa khi không train.
+HƯỚNG DẪN CHÍNH: docs/MAY_CO_VA_LAPTOP.md
+Không CI. Lỗi/trạng thái gửi W&B riêng tư. Không cần SSH.
+Nếu chưa cấu hình giám sát: python run.py --once
+Điều kiện máy đích và kết quả: CHAY_MOT_LENH.md
+
+Bộ chạy bổ sung nằm trong repro/, scripts/ và configs_repro/.
+README.md và các thư mục SignGraph/MixSignGraph/... là bản gốc của tác giả.
+
+Đây là bản tái dựng có kiểm thử; CHƯA tái lập số liệu paper.
+Lệnh mặc định tự chuẩn bị PHOENIX14T/pretrained weights và chạy chiến dịch 68 lượt.
+Danh sách thí nghiệm/giả định: docs/PHOENIX14T_SUITE.md
+Docker build và nhiều GPU cần nghiệm thu trên máy Linux đích.
+
+Báo cáo khác biệt: docs/AUDIT.md
+Báo cáo kiểm thử: reports/VALIDATION.md

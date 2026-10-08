@@ -1,0 +1,74 @@
+task: cslr
+input_kind: rgb
+data_root: data/phoenix14t
+train: data/manifests/phoenix14t/train.jsonl
+dev: data/manifests/phoenix14t/dev.jsonl
+test: data/manifests/phoenix14t/test.jsonl
+output: runs/phoenix14t_cslr_suite_seed0/types_dense_sparse_dynamic
+resnet_weights: assets/resnet18-f37072fd.pth
+target_field: gloss
+hsg: true
+graph_order: tsg-lsg
+graph_conv: edge
+hidden_size: 1024
+seed: 0
+precision: fp16
+global_batch: 6
+micro_batch: 1
+eval_batch: 1
+workers: 2
+cpu_threads: 2
+sync_batchnorm: true
+epochs: 50
+lr: 0.0001
+weight_decay: 0.0001
+milestones:
+- 20
+- 35
+gamma: 0.2
+conv_ctc: 1.0
+seq_ctc: 1.0
+distillation: 25.0
+grad_clip: 0
+ctc_beam: 10
+eval_head: sequence
+selection_metric: wer
+paper_ablation: true
+backbone: resnet18
+module_mask:
+- true
+- true
+- true
+- true
+- true
+- true
+module_order: tsg-lsg-hsg
+graph_scales: &id001
+- 16
+local_k:
+- 3
+- 4
+temporal_k:
+- 49
+- 49
+distance: euclidean
+lsg_type: dense
+tsg_type: sparse
+hsg_type: dynamic
+drop_edge: 0.0
+suite_experiment:
+  id: types_dense_sparse_dynamic
+  source: Table 13a
+  changes:
+    lsg_type: dense
+    tsg_type: sparse
+    hsg_type: dynamic
+    graph_scales: *id001
+  paper_dev_wer: 18.1
+  paper_test_wer: 20.1
+  assumption: Paper says one LSG/TSG/HSG but does not identify stage; reconstructed
+    at patch16. Dynamic HSG uses KNN over projected high+low nodes.
+  paper_dev_del: 5.1
+  paper_dev_ins: 2.2
+  paper_test_del: 5.1
+  paper_test_ins: 2.1

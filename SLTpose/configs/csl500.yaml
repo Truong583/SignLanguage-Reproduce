@@ -1,0 +1,27 @@
+
+dataset_root: /data/sl/csl500/csl500_2d.pkl
+
+
+dev: ../dataprocess/CSL500LLama/CSL500.dev
+test: ../dataprocess/CSL500LLama/CSL500.test
+train: ../dataprocess/CSL500LLama/CSL500.train
+
+datatype: 'h5'
+pretrained_model_name_or_path:  /data/sl/model/Llama-3.2-1B
+embedding_file: ../dataprocess/CSL500LLama/embedding.pt
+logit_file: ../dataprocess/CSL500LLama/logit.pt
+GlossEmbedding:
+  gloss2embed_file: ../dataprocess/CSL500LLama/gloss_embeddings.bin
+GlossTokenizer:
+  gloss2id_file: ../dataprocess/CSL500LLama/gloss2ids.pkl
+
+
+TextTokenizer:
+  pretrained_model_name_or_path:  /data/sl/model/Llama-3.2-1B
+  pruneids_file: ../dataprocess/CSL500LLama/map_ids.pkl
+  language: de
+
+label_smoothing: 0.2
+num_key: 42
+
+

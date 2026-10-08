@@ -1,0 +1,22 @@
+dataset_root: path
+
+
+dict_path: ../Dataprocessing/csl-daily/gloss_dict.npy
+dev: ../Dataprocessing/csl-daily/csl-dailynew.dev
+test: ../Dataprocessing/csl-daily/csl-dailynew.test
+train: ../Dataprocessing/csl-daily/csl-dailynew.train
+
+pretrained_model_name_or_path: ../Dataprocessing/csl-daily
+GlossEmbedding:
+  gloss2embed_file: ../Dataprocessing/csl-daily/gloss_embeddings.bin
+GlossTokenizer:
+  gloss2id_file: ../Dataprocessing/csl-daily/gloss2ids.pkl
+  src_lang: zh_CN
+TextTokenizer:
+  pretrained_model_name_or_path: ../Dataprocessing/csl-daily/
+  pruneids_file: ../Dataprocessing/csl-daily/map_ids.pkl
+  tgt_lang: zh_CN
+  src_lang: zh_CN
+  level: word
+  tokenizer_file: ../Dataprocessing/csl-daily/txt2ids.pkl
+label_smoothing: 0.2

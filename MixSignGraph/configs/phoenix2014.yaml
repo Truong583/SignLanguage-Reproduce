@@ -1,0 +1,20 @@
+dataset_root: path
+dict_path: ./preprocess/phoenix2014/gloss_dict.npy
+
+
+GlossTokenizer:
+  gloss2id_file: ../Dataprocessing/phoenix-2014/gloss2idsMy14t.pkl
+  src_lang: de_DGS
+
+dev: ../Dataprocessing/phoenix-2014/phoenix-2014.dev
+test: ../Dataprocessing/phoenix-2014/phoenix-2014.test
+train: ../Dataprocessing/phoenix-2014/phoenix-2014.train 
+
+pretrained_model_name_or_path: ../Dataprocessing/phoenix-2014
+
+TextTokenizer:
+  pretrained_model_name_or_path: ../Dataprocessing/phoenix-2014/
+  pruneids_file: ../Dataprocessing/phoenix-2014/map_ids.pkl
+  tgt_lang: de_DE
+
+label_smoothing: 0.2

@@ -1,0 +1,15 @@
+# PyTorch and torchvision come as a matched pair from the Docker base image.
+numpy==1.26.4
+Pillow==10.4.0
+PyYAML==6.0.2
+einops==0.8.0
+transformers==4.44.2
+tokenizers==0.19.1
+sentencepiece==0.2.0
+protobuf==5.28.3
+huggingface-hub==0.25.2
+safetensors==0.4.5
+portalocker==2.10.1
+pytest==8.3.3
+spacy==3.7.5
+wandb==0.18.7

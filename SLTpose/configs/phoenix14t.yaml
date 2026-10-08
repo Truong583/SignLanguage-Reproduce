@@ -1,0 +1,24 @@
+dataset_root: /data/sl/SLTpose1/data/Phoenix14T/
+ 
+
+dev: ./phoenix14TLLama/phoenix-2014t.dev
+test: ./phoenix14TLLama/phoenix-2014t.test
+train: ./phoenix14TLLama/phoenix-2014t.train
+
+datatype: 'h5'
+pretrained_model_name_or_path:  ./Llama-3.2-1B
+embedding_file: ./phoenix14TLLama/embedding.pt
+logit_file: ./phoenix14TLLama/logit.pt
+GlossEmbedding:
+  gloss2embed_file: ./phoenix14TLLama/gloss_embeddings.bin
+GlossTokenizer:
+  gloss2id_file: ./phoenix14TLLama/gloss2ids.pkl
+
+
+TextTokenizer:
+  pretrained_model_name_or_path:  ./Llama-3.2-1B
+  pruneids_file: ./phoenix14TLLama/map_ids.pkl
+  language: de
+
+label_smoothing: 0.2
+num_key: 100

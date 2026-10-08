@@ -1,0 +1,4 @@
+{
+  "training_change": "pause",
+  "explanation": "Keep checkpoint guards. A fix that changes numerical training requires review. Set training_change to new_campaign in a reviewed release to start fresh remotely without deleting old results."
+}

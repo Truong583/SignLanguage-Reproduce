@@ -1,0 +1,36 @@
+# RECONSTRUCTION: see docs/AUDIT.md
+task: cslr
+input_kind: features
+data_root: data/openasl
+train: data/manifests/openasl_tctc/train.jsonl
+dev: data/manifests/openasl_tctc/dev.jsonl
+test: data/manifests/openasl_tctc/test.jsonl
+output: runs/openasl_tctc_seed0
+target_field: pseudo_gloss
+hsg: true
+graph_order: tsg-lsg
+graph_conv: edge
+hidden_size: 1024
+seed: 0
+precision: fp16
+global_batch: 6
+micro_batch: 1
+eval_batch: 1
+workers: 2
+cpu_threads: 2
+sync_batchnorm: true
+epochs: 50
+lr: 0.0001
+weight_decay: 0.0001
+milestones:
+- 20
+- 35
+gamma: 0.2
+conv_ctc: 1.0
+seq_ctc: 1.0
+distillation: 25.0
+grad_clip: 0
+ctc_beam: 10
+eval_head: sequence
+selection_metric: wer
+feature_dim: 1024

@@ -1,0 +1,17 @@
+__pycache__/
+.pytest_cache/
+data/**
+assets/**
+runs/**
+*.zip
+*.tar
+.venv/
+!data/.gitkeep
+!assets/.gitkeep
+!runs/.gitkeep
+.updates/
+.env
+*client_secret*.json
+*oauth_credentials*.json
+*.pem
+*.key

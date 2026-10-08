@@ -1,0 +1,8 @@
+{
+  "version": "phoenix14t-cslr-supervised-no-ci-v2",
+  "experiments": 68,
+  "quantitative_configurations": 67,
+  "qualitative_reference_configurations": 1,
+  "extractor": "tar-data-filter-internal-links-and-correct-release-root",
+  "status": "tested reconstruction; paper metrics not yet reproduced"
+}

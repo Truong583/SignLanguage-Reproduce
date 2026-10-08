@@ -1,0 +1,57 @@
+feeder: dataset.dataloader_video1.BaseFeeder
+phase: train
+dataset: phoenix2014-T 
+
+work_dir: path
+batch_size: 2
+random_seed: 0
+test_batch_size: 2
+num_worker: 10
+device: 0,1,2
+log_interval: 10000
+eval_interval: 1
+save_interval: 10
+metric: rouge #wer
+level: word
+loss_weights:
+  SeqCTC: 1.0
+  ConvCTC: 1.0
+  Dist: 25.0
+  Translation: 1.0
+load_weights: None 
+load_checkpoints:  None  
+ignore_weights: [] 
+
+optimizer_args:
+  optimizer: Adam
+  learning_rate:
+    base_lr: 0.0001
+    translation: 0.00001
+    vlembedding: 0.001
+  step: [20, 35] 
+  learning_ratio: 1
+
+  scheduler:  ScheaL 
+  weight_decay: 0.0001
+  start_epoch: 0
+  num_epoch: 50
+  nesterov: False
+
+feeder_args:
+  mode: 'train'
+  datatype: 'video'
+  num_gloss: -1
+  drop_ratio: 1.0
+  frame_interval: 1
+  image_scale: 1.0  
+  input_size: 224
+
+model: slrt_network.SLRModel
+decode_mode: beam
+model_args:
+  num_classes: 1296
+  c2d_type: resnet18
+  conv_type: 2
+  use_bn: 1 
+  share_classifier: True
+  weight_norm: True
