@@ -50,6 +50,12 @@ python3 service.py status
 
 Chỉ đóng Terminal sau khi thấy service `active (running)`. Nếu vẫn lỗi, gửi kết quả `systemctl status signlanguage-8afccb21070c.service --no-pager -l` và `sudo journalctl -u signlanguage-8afccb21070c.service -n 50 --no-pager`. Không chạy thêm `run.py` khi service đã hoạt động.
 
+## Nếu doctor báo Impossible CTC alignment sau khi tải đủ PHOENIX14T
+
+Bản v10 sửa kiểm tra RGB train theo chính sách temporal resampling đã có trong bộ đọc dữ liệu, thay vì kiểm tra độ dài frame gốc. Không đổi nhãn, không bỏ mẫu, không thay kiến trúc/loss hoặc fingerprint code huấn luyện. Doctor in số mẫu train cần tăng độ dài và số mẫu dev/test bị giới hạn độ dài decode; dev/test không được tăng độ dài dựa trên nhãn. Feature train vẫn dừng khi căn chỉnh CTC bất khả thi.
+
+Nếu service đang hoạt động và pipeline vừa dừng do lỗi này, không chạy thêm `run.py` hay tải lại dữ liệu. Sau khi bản sửa được publish, supervisor sẽ lấy bản mới khi kiểm tra GitHub, thường khoảng 5 phút một lần trong thời gian chờ. Log lượt mới phải có `PHOENIX14T already prepared` và báo cáo doctor trước khi train. Cần mạng để lấy bản sửa; `active (running)` của service chỉ chứng minh supervisor đang chạy, không chứng minh huấn luyện đã thành công.
+
 ## Khi mất mạng hoặc kết nối W&B bị ngắt
 
 - Đang tải: timeout được thử lại tối đa8 lần, giữ `.part`. Server hỗ trợ Range thì tải tiếp; nếu không thì phải tải lại archive. Hết giới hạn thì chờ, không coi là lỗi mô hình. Gửi log nếu cần xử lý; không xóa `.part`.
