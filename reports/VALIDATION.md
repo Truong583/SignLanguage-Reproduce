@@ -1,5 +1,10 @@
 # Báo cáo kiểm tra — cập nhật 2026-10-08
 
+## Theo dõi cấu hình đơn trên W&B
+
+- Observer đọc cả `runs/<experiment>/history.jsonl` của `--single` và `runs/<campaign>/<experiment>/history.jsonl` của suite. Trước sửa chỉ đọc kiểu suite, khiến cấu hình đơn thiếu scalar loss/WER trên W&B.
+- **19 passed, 0.52 giây** (`runs/pytest-observer-single`): có kiểm tra hai dạng thư mục, cursor tránh ghi lặp và bỏ trường nhạy cảm. Không gửi dữ liệu lên tài khoản W&B người dùng trong kiểm tra; cần health.json của máy cô để xác nhận kết nối thật.
+
 ## Sửa timeout tải PHOENIX
 
 - Log người dùng xác nhận GPU probe đã thành công, nhưng đọc HTTP archive PHOENIX bị TimeoutError trước training. Tải dở vẫn nằm trong data/*.part. Downloader thêm tối đa8 lượt thử, timeout180s, backoff5/10/20/40/60s; giữ byte đã ghi, kiểm tra Content-Range trước append, server trả200 thì tải lại thay vì ghi trùng. Incomplete download được giữ để thử tiếp; lỗi HTTP vĩnh viễn hoặc range lệch dừng.

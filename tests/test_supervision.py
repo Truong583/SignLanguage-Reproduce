@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import pytest
 from scripts.privacy import require_private
-from scripts.report_wandb import scalar_metrics,contained_file
+from scripts.report_wandb import scalar_metrics,contained_file,scan
 from scripts.supervisor import should_run,monitor_command
 from scripts.diagnostics import redact
 
@@ -45,6 +45,21 @@ def test_metrics_filter_excludes_strings_secrets_and_nonfinite_values():
     values=scalar_metrics({'epoch':2,'loss':0.4,'api_key':'secret','prediction':'private gloss',
        'dev':{'sequence':{'wer':12.3}},'seconds':float('nan')})
     assert values=={'epoch':2,'loss':0.4,'dev/sequence/wer':12.3}
+
+
+def test_observer_reads_single_and_suite_histories_once_and_filters_sensitive_fields(tmp_path):
+    root=tmp_path/'runs'; spool=tmp_path/'spool'; spool.mkdir()
+    for name in ('phoenix14t_cslr/history.jsonl','campaign/main/history.jsonl'):
+        path=root/name; path.parent.mkdir(parents=True,exist_ok=True)
+        path.write_text(json.dumps({'epoch':1,'loss':0.4,'dev':{'sequence':{'wer':20.0}},'api_key':'fake-sensitive-value'})+'\n')
+    logged=[]
+    run=type('Run',(),{'log':lambda self,value:logged.append(value)})()
+    state={}; scan(run,root,spool,state)
+    assert len(logged)==2
+    assert any('phoenix14t_cslr/loss' in row for row in logged)
+    assert any('campaign/main/dev/sequence/wer' in row for row in logged)
+    assert 'fake-sensitive-value' not in json.dumps(logged)
+    scan(run,root,spool,state); assert len(logged)==2
 
 
 def test_attachments_must_be_contained_and_bounded(tmp_path):

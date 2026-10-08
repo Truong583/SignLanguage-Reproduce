@@ -31,7 +31,8 @@ def contained_file(path,root,limit):
 
 def scan(run,root,spool,state):
     # Exact names and containment checks; do not glob arbitrary files into artifacts.
-    for path in sorted(root.glob('*/*/history.jsonl')):
+    histories=set(root.glob('*/history.jsonl')) | set(root.glob('*/*/history.jsonl'))
+    for path in sorted(histories):
         if not contained_file(path,root,32*1024*1024): continue
         name=path.relative_to(root).as_posix(); offset=state.setdefault('history',{}).get(name,0)
         if offset>path.stat().st_size: offset=0
