@@ -1,5 +1,10 @@
 # Báo cáo kiểm tra — cập nhật 2026-10-08
 
+## Lượt mới từ xa cho cấu hình đơn
+
+- Host chuyển tên campaign đã được duyệt vào cả chế độ --single. Container dùng thư mục `runs/<campaign>/<config-stem>` khi campaign khác mặc định; mặc định giữ nguyên vị trí output cũ. Nhờ vậy policy new_campaign cho sửa code tính toán không vô tình quay lại thư mục checkpoint của mô hình cũ.
+- **41 passed, 1.61 giây** (`runs/pytest-remote-single-campaign`): kiểm tra truyền campaign qua Docker và chọn output mới ở pipeline đơn, cùng guards/checkpoint/update/live log. Không thay mô hình/loss hoặc chạy PHOENIX thật.
+
 ## Live log và phục hồi sau tắt máy
 
 - Sửa đường dẫn live log: status ghi `runs/diagnostics/<id>`, còn mount observer đã là runs; bỏ tiền tố runs để đọc đúng console.log. Live file lọc key, tối đa32KiB, được thay atomic và gửi theo policy now. Tests kiểm tra lỗi mạng vẫn giữ file local và chặn đường dẫn ngoài diagnostics.

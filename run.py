@@ -35,7 +35,7 @@ def container_command(image, stage, config, memory, cpus, name, suite=False,camp
     command += ["--workdir", "/workspace", image, "python", "scripts/run_local.py",
                 "--stage", stage, "--config", config]
     if suite: command += ["--suite"]
-    if suite and campaign!=DEFAULT_CAMPAIGN: command += ['--campaign',campaign]
+    if campaign!=DEFAULT_CAMPAIGN: command += ['--campaign',campaign]
     return command
 
 

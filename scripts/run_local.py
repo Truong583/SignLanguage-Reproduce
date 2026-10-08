@@ -148,6 +148,9 @@ def main():
     os.chdir(ROOT)
     import yaml
     cfg = yaml.safe_load(args.config.read_text(encoding="utf-8"))
+    if not args.suite and args.campaign!='phoenix14t_cslr_suite_seed0':
+        from scripts.deployment import valid_campaign
+        cfg['output']=str(ROOT/'runs'/valid_campaign(args.campaign)/args.config.stem)
     if args.stage == "probe":
         import torch
         if not torch.cuda.is_available():

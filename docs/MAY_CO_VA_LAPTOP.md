@@ -53,6 +53,8 @@ Chạy ở **máy Linux của cô**, không chạy trên laptop để train. M�
 
 ## 3. Khi có lỗi
 
+Xem log ở nhà: mở project W&B trên laptop, chọn observer mới nhất → Files/live_log_tail.txt; lỗi có Artifacts/runtime-error/log_tail.txt và diagnostic.json. `python3 service.py logs` chỉ là cách xem journal trực tiếp tại máy cô, không bắt buộc cho giám sát từ xa. Lấy file lỗi từ W&B, sửa tại laptop, rồi `python publish.py`. Supervisor trên máy cô kiểm tra GitHub mỗi5 phút lúc rảnh; bản sửa tương thích tiếp tục checkpoint, bản sửa numerical chỉ được kích hoạt với quyết định campaign mới. Chế độ single cũng có thư mục campaign mới riêng, không xóa hoặc ghép checkpoint cũ. Mất mạng sẽ làm trễ gửi log/cập nhật; không có SSH hoặc đổi code giữa lúc trainer đang chạy.
+
 Nếu lỗi ở Docker build trước khi W&B container khởi động, diagnostic chỉ lưu local tại `runs/diagnostics`; chưa thể gửi lên W&B. Supervisor giữ log và chờ commit sửa, không dựng lại cùng revision mãi. Khi cập nhật thủ công từ laptop: dừng supervisor, `git pull --ff-only`, rồi `python3 update.py --automatic` để kích hoạt bản mới; chỉ pull không thay bản đang ghim trong `.updates/active.json`. Khi cập nhật thành công, chạy lại lệnh train đã chọn (ví dụ `python3 run.py --single`).
 
 1. Trong W&B, mở project của bạn. Run loại `observer` chứa trạng thái, loss/WER theo epoch, `live_log_tail.txt` và artifact loại `runtime-error` gồm `diagnostic.json`, `log_tail.txt`. Bật nhận W&B alerts nếu muốn có thông báo. Có Internet thì log thường xuất hiện sau khoảng 30 giây cộng thời gian đồng bộ; mạng lỗi có thể chậm hơn.

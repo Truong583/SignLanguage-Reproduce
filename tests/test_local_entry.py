@@ -2,6 +2,7 @@ import importlib.util
 from pathlib import Path
 import io
 import tarfile
+import contextlib
 
 import pytest
 
@@ -28,6 +29,22 @@ def test_docker_isolation_and_offline_training():
     assert all("readonly" in mount for mount in mounts[:3])
     assert "readonly" not in mounts[3] and "dst=/workspace/runs" in mounts[3]
     assert all("docker.sock" not in mount for mount in mounts)
+
+
+def test_single_new_campaign_is_forwarded_and_uses_separate_output(tmp_path,monkeypatch):
+    entry=load('single_campaign_entry',ROOT/'run.py')
+    command=entry.container_command('image','train','configs_repro/phoenix14t_cslr.yaml',16,4,'test',False,'reviewed-fix')
+    assert command[command.index('--campaign')+1]=='reviewed-fix' and '--suite' not in command
+    pipeline=load('single_campaign_pipeline',ROOT/'scripts/run_local.py')
+    monkeypatch.setattr(pipeline,'ROOT',tmp_path)
+    cfg=tmp_path/'phoenix14t_cslr.yaml'; cfg.write_text('task: cslr\noutput: runs/old-run\n')
+    monkeypatch.setattr(pipeline.sys,'argv',['run_local.py','--stage','train','--config',str(cfg),'--campaign','reviewed-fix'])
+    monkeypatch.setattr(pipeline.os,'chdir',lambda *args:None)
+    monkeypatch.setattr(pipeline,'workspace_lock',contextlib.nullcontext)
+    seen=[]
+    monkeypatch.setattr(pipeline,'train',lambda config,*args:seen.append(config) or True)
+    pipeline.main()
+    assert seen[0]['output']==str(tmp_path/'runs/reviewed-fix/phoenix14t_cslr')
 
 
 def test_resume_and_evaluate_same_dev_selected_checkpoint(tmp_path, monkeypatch):
