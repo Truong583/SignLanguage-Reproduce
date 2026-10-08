@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import pytest
 from scripts.privacy import require_private
-from scripts.report_wandb import scalar_metrics,contained_file,scan
+from scripts.report_wandb import scalar_metrics,contained_file,scan,send_live_log
 from scripts.supervisor import should_run,monitor_command
 from scripts.diagnostics import redact
 
@@ -129,7 +129,7 @@ def test_supervisor_waits_after_failure_and_updates_only_after_worker_exit(tmp_p
         if '--if-new' in command:
             assert all(p.poll() is not None for p in workers)
             updates.append(command)
-        return type('Result',(),{'returncode':0})()
+        return type('Result',(),{'returncode':1 if command[:3]==['docker','image','inspect'] else 0})()
     def sleep(seconds):
         clock[0]+=seconds
         if len(updates)>=2: raise KeyboardInterrupt
@@ -173,7 +173,7 @@ def test_failed_monitor_build_waits_for_updates_and_never_rebuilds_same_revision
         if '--if-new' in command:
             updates.append(command)
             if recover: active[0]=new
-        return type('Result',(),{'returncode':0})()
+        return type('Result',(),{'returncode':1 if command[:3]==['docker','image','inspect'] else 0})()
     def sleep(seconds):
         clock[0]+=seconds
         if len(updates)>=2: raise KeyboardInterrupt

@@ -6,6 +6,7 @@
 !diagnose.py
 !status.py
 !setup_machine.py
+!service.py
 !docs
 !docs/AUDIT.md
 !docs/paper_targets.json

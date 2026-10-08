@@ -73,16 +73,13 @@ Tiếp tục nghĩa là từ checkpoint đã lưu, phần chưa lưu phải ch�
 
 ## 5. Đóng terminal mà máy vẫn chạy
 
-Một lần, **trên máy cô**, dùng user service đã được tạo:
+Một lần, **trên máy cô**, dừng lệnh run.py đang chạy rồi cài system service riêng của dự án:
 
 ```bash
-mkdir -p "$HOME/.config/systemd/user"
-cp .updates/signlanguage.service "$HOME/.config/systemd/user/signlanguage.service"
-systemctl --user daemon-reload
-systemctl --user enable --now signlanguage.service
+python3 service.py install --single
 ```
 
-Sau đó service tự chạy `run.py`; không mở thêm `run.py` thứ hai. Dừng bằng `systemctl --user stop signlanguage.service`. Xem tình trạng bằng `systemctl --user status signlanguage.service`. Không chạy bằng `sudo`. Muốn service tiếp tục sau **đăng xuất** hoặc tự khởi động khi máy bật mà chưa đăng nhập cần chủ máy cho phép user lingering; mặc định không tự thay cấu hình này. Đóng terminal và đăng xuất là hai việc khác nhau. Nếu không dùng service, terminal phải còn mở.
+Sudo chỉ dùng để cài/bật service có tên riêng theo workspace; training chạy bằng tài khoản thường, Group=docker. Không chạy `sudo python3 service.py`. Service tự chạy cấu hình chính ở boot, tiếp tục từ checkpoint khi đủ điều kiện; không mở thêm run.py thứ hai. Muốn cả68 lượt phải chủ động dùng `--suite`. Xem log: `python3 service.py logs`; dừng: `python3 service.py stop`; xem trạng thái: `python3 service.py status`. Không cần user lingering. Nếu không dùng service thì Terminal phải còn mở. Xem [hướng dẫn mất mạng/tắt máy](MAT_MANG_TAT_MAY.md).
 
 ## 6. Hai notebook
 

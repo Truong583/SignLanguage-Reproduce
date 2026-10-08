@@ -26,7 +26,7 @@ def redact(text):
 
 
 def classify(text,exit_code):
-    if exit_code==130: return {'category':'interrupted','confidence':'high','next_step':'Rerun the same command to restore the saved checkpoint.'}
+    if exit_code in (130,75): return {'category':'interrupted','confidence':'high','next_step':'Rerun the same command to restore the saved checkpoint.'}
     patterns=[
       ('download_connection',r'TimeoutError: The read operation timed out|Download interrupted|URLError.*timed out','Retain the archive .part and resume after network/server recovery; this is not a training failure.'),
       ('package_platform',r'is not supported on this platform','Reinstall a compatible wheel inside the Docker image; retain pip check.'),
@@ -77,7 +77,7 @@ class Recorder:
         from scripts.deployment import atomic_json
         quiet=time.monotonic()-self.last_output
         value={'schema':1,'pid':os.getpid(),'stage':self.stage,'heartbeat_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
-               'status':'running' if self.code is None else ('completed' if self.code==0 else 'interrupted' if self.code==130 else 'failed'),
+               'status':'running' if self.code is None else ('completed' if self.code==0 else 'interrupted' if self.code in (130,75) else 'failed'),
                'seconds_without_console_output':round(quiet),'quiet_warning':quiet>30*60,
                'suspected_error':self.alert,'diagnostic_directory':str(self.root.relative_to(self.workspace))}
         atomic_json(self.root/'status.json',value)

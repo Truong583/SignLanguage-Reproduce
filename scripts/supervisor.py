@@ -8,7 +8,7 @@ import subprocess
 import sys
 import signal
 import time
-from scripts.deployment import OperationLock,active_release,atomic_json,state_dir,image_name,workspace_label
+from scripts.deployment import OperationLock,active_release,atomic_json,state_dir,image_name,ensure_image,workspace_label
 from scripts.diagnostics import redact,Recorder,read_tail
 
 
@@ -61,7 +61,7 @@ def supervise(workspace,initial,args):
         recorder=Recorder(workspace,source); recorder.stage='monitor_docker_build'
         try:
             with OperationLock(workspace):
-                recorder.call(['docker','build','--build-arg','BASE_IMAGE='+base,'--build-arg','RUN_TESTS=0','-t',image,'.'],cwd=source)
+                image=ensure_image(source,base,recorder.call)
             recorder.finish(0)
         except BaseException as exc:
             recorder.finish(130 if isinstance(exc,KeyboardInterrupt) else getattr(exc,'returncode',1),exc)
@@ -96,14 +96,14 @@ def supervise(workspace,initial,args):
                       '--branch',cfg['branch'],'--base-image',base],env=env)
                     continue
                 if should_run(state,revision):
-                    state={'revision':revision,'outcome':'running'}; atomic_json(state_path,state); status('training')
+                    state={'revision':revision,'outcome':'running'}; atomic_json(state_path,state); status('running_pipeline')
                     process=subprocess.Popen([sys.executable,str(source/'run.py'),'--once','--base-image',base,*args],env=env,
                         start_new_session=os.name!='nt')
                     while process.poll() is None:
-                        status('training',monitor_alive=observer.poll() is None)
+                        status('running_pipeline',monitor_alive=observer.poll() is None)
                         time.sleep(5)
                     code=process.returncode
-                    if code not in (0,130):
+                    if code not in (0,130,75):
                         latest=workspace/'runs/status.json'
                         report=json.loads(latest.read_text()) if latest.exists() else {}
                         if report.get('status')!='failed':
@@ -113,9 +113,10 @@ def supervise(workspace,initial,args):
                                 crash.line(read_tail(log_path))
                             crash.line(f'Worker exited with status {code}; review Docker/OS for external termination.\n')
                             crash.finish(code)
-                    state.update(outcome='completed' if code==0 else 'interrupted' if code==130 else 'failed',exit_code=code)
+                    state.update(outcome='completed' if code==0 else 'interrupted' if code in (130,75) else 'failed',exit_code=code)
                     atomic_json(state_path,state)
                     if code==130: return 130
+                    if code==75: return 0
                 status('waiting_for_revision',monitor_alive=observer.poll() is None)
                 # Every successful/failed revision runs at most once automatically.
                 wait_until=time.monotonic()+max(30,int(cfg.get('poll_seconds',300)))

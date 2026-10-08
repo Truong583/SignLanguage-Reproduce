@@ -1,5 +1,13 @@
 # Báo cáo kiểm tra — cập nhật 2026-10-08
 
+## Live log và phục hồi sau tắt máy
+
+- Sửa đường dẫn live log: status ghi `runs/diagnostics/<id>`, còn mount observer đã là runs; bỏ tiền tố runs để đọc đúng console.log. Live file lọc key, tối đa32KiB, được thay atomic và gửi theo policy now. Tests kiểm tra lỗi mạng vẫn giữ file local và chặn đường dẫn ngoài diagnostics.
+- Cấu hình đơn mặc định checkpoint mỗi200 optimizer updates, backend local giữ tối thiểu hai thế hệ last/best có checksum. Runner restore bản commit đáng tin trước train. Chỉ cho phép thay các trường cadence/storage khi nạp config cũ; recipe/code/data guards vẫn giữ. Checkpoint partial không được eval/đánh dấu COMPLETED; exit75 là session lưu dở để lần sau tiếp tục.
+- `service.py install --single` cài unit riêng theo workspace, User là tài khoản thường, Group=docker, Requires Docker/mount, KillMode mixed, stop timeout180s. Có lệnh stop/status/logs; default giữ phạm vi main. Không cài service trên máy phát triển. Reuse image đã dựng giúp tiếp tục khi mạng mất nếu đủ data/weights. W&B session mới đọc lại history nguồn để tránh mất scalar chỉ được queued ở phiên cũ.
+- **62 passed, 28.59 giây** (`runs/pytest-power-recovery-integrated`). Có integration CPU thật trên vài mẫu features giả: save giữa epoch, cố ý corrupt payload mới, restore thế hệ trước rồi train hết epoch. Không phải PHOENIX hoặc thử cắt điện thật. Sau chỉnh setup, nhóm kiểm tra chạy lại **31 passed, 1 deselected, 3.95 giây** (bỏ integration đã qua).
+- Chưa nghiệm thu systemd, boot/shutdown thật trên máy cô hoặc file live upload online từ bản sửa. Không bảo đảm mọi sự cố mất điện/ổ đĩa; chỉ checkpoint commit nguyên vẹn được phục hồi, phần chưa lưu phải tính lại. Không gửi checkpoint/data/key lên W&B hoặc GitHub.
+
 ## Theo dõi cấu hình đơn trên W&B
 
 - Observer đọc cả `runs/<experiment>/history.jsonl` của `--single` và `runs/<campaign>/<experiment>/history.jsonl` của suite. Trước sửa chỉ đọc kiểu suite, khiến cấu hình đơn thiếu scalar loss/WER trên W&B.

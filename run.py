@@ -8,7 +8,7 @@ import subprocess
 import sys
 import uuid
 from scripts.deployment import (OperationLock,active_release,settings,valid_campaign,
-    image_name,workspace_label,DEFAULT_CAMPAIGN)
+    image_name,ensure_image,workspace_label,DEFAULT_CAMPAIGN)
 from scripts.diagnostics import Recorder
 
 ROOT = Path(__file__).resolve().parent
@@ -88,10 +88,8 @@ def main(recorder=None):
     # Host does not install packages or modify Docker/driver configuration.
     if recorder: recorder.stage='verify_source'
     call([sys.executable, "scripts/verify_bundle.py"], cwd=ROOT, **({} if recorder else {'check':True}))
-    image = image_name(ROOT,args.base_image)
     if recorder: recorder.stage='docker_build'
-    call(["docker", "build", "--build-arg", f"BASE_IMAGE={args.base_image}",
-                    "-t", image, "."], cwd=ROOT, **({} if recorder else {'check':True}))
+    image=ensure_image(ROOT,args.base_image,recorder.call if recorder else None)
     print(f"Docker limits: {memory} GiB RAM, {cpus} CPU(s). Effective batch remains in config.", flush=True)
     for stage in ("probe", "prepare", "train"):
         name = "signlanguage-" + uuid.uuid4().hex[:12]
@@ -99,7 +97,7 @@ def main(recorder=None):
             if recorder: recorder.stage=stage
             call(container_command(image, stage, config, memory, cpus, name, not args.single,args.campaign), **({} if recorder else {'check':True}))
         except KeyboardInterrupt:
-            subprocess.run(["docker", "stop", "--time", "30", name], check=False)
+            subprocess.run(["docker", "stop", "--time", "120", name], check=False)
             raise
     print("Finished. Measured metrics and paper comparison are saved under runs/.")
 
@@ -132,7 +130,8 @@ def monitored_run():
         print("Stopped. Run the same command again to resume the saved checkpoint.", file=sys.stderr)
         recorder.finish(130); return 130
     except Exception as error:
-        recorder.finish(getattr(error,'returncode',1),error); return 1
+        code=getattr(error,'returncode',1)
+        recorder.finish(code,error); return 75 if code==75 else 1
 
 
 if __name__ == "__main__":

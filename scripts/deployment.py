@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import re
 import uuid
+import subprocess
 
 DEFAULT_CAMPAIGN='phoenix14t_cslr_suite_seed0'
 
@@ -99,6 +100,18 @@ def recipe_hash(root):
 def image_name(root,base_image):
     digest=hashlib.sha256((Path(root)/'BUNDLE_SHA256.json').read_bytes()+base_image.encode()).hexdigest()
     return 'mixsigngraph-repro:'+digest[:16]
+
+
+def ensure_image(root,base_image,call=None):
+    name=image_name(root,base_image)
+    exists=subprocess.run(['docker','image','inspect',name],capture_output=True,text=True,timeout=20)
+    if exists.returncode==0:
+        print('Reusing the existing Docker image: '+name,flush=True)
+        return name
+    command=['docker','build','--build-arg','BASE_IMAGE='+base_image,'--build-arg','RUN_TESTS=0','-t',name,'.']
+    if call: call(command,cwd=root)
+    else: subprocess.run(command,cwd=root,check=True)
+    return name
 
 
 def workspace_label(workspace): return hashlib.sha256(str(Path(workspace).resolve()).encode()).hexdigest()[:24]

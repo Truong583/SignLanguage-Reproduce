@@ -34,6 +34,7 @@ def test_resume_and_evaluate_same_dev_selected_checkpoint(tmp_path, monkeypatch)
     pipeline = load("local_pipeline", ROOT / "scripts/run_local.py")
     monkeypatch.setattr(pipeline, "ROOT", tmp_path)
     monkeypatch.setattr(pipeline, "code_hash", lambda: "fixed-code")
+    monkeypatch.setattr(pipeline, "training_finished",lambda *args:True)
     output = tmp_path / "runs/experiment"
     output.mkdir(parents=True)
     (output / "last.pt").write_bytes(b"saved")

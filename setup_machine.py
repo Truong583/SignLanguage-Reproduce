@@ -47,14 +47,7 @@ def main():
       'base_image':'pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime'}
     atomic_json(root/'machine.json',machine)
     atomic_json(root/'config.json',{'repo':machine['repo'],'branch':'main','campaign':'phoenix14t_cslr_suite_seed0'})
-    python=str(Path(sys.executable).resolve())
-    def quote(value): return '"'+value.replace('\\','\\\\').replace('"','\\"').replace('%','%%')+'"'
-    service='\n'.join(['[Unit]','Description=SignLanguage reproduction supervisor','After=network-online.target',
-      '[Service]','Type=simple','WorkingDirectory='+quote(str(ROOT)),
-      'ExecStart='+quote(python)+' '+quote(str(ROOT/'run.py')),'Restart=on-failure','RestartSec=30',
-      'Environment=PYTHONUNBUFFERED=1','[Install]','WantedBy=default.target',''])
-    (root/'signlanguage.service').write_text(service)
-    print('Configured. Run python run.py on this Linux machine. Optional user service unit: .updates/signlanguage.service')
+    print('Configured. Main experiment: python3 run.py --single. Optional boot/background mode: python3 service.py install --single')
     print('No SSH server, root installation or global Git credential configuration is needed.')
     print('Dashboard: https://wandb.ai/'+entity+'/'+a.project)
 

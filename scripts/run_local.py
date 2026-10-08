@@ -38,6 +38,12 @@ def code_hash():
     return digest.hexdigest()
 
 
+def training_finished(path,epochs):
+    import torch
+    state=torch.load(path,map_location='cpu',weights_only=False)
+    return bool(state.get('epoch_complete',True) and state['epoch']+1>=epochs)
+
+
 def prepare(cfg):
     from scripts.fetch_phoenix import ensure_phoenix, valid_layout, check_prepare_space
     data_root = Path(cfg["data_root"])
@@ -77,13 +83,19 @@ def train(cfg, config_path):
         raise ValueError("Experiment output must be inside runs/.")
     output.mkdir(parents=True, exist_ok=True)
     cfg["code_sha256"] = code_hash()
+    cfg.setdefault('checkpoint_every_updates',200)
+    cfg.setdefault('persistence',{'backend':'local','root':str(output.parent/'.checkpoint-store'),'run_id':output.name})
     saved_config = output / "local_config.yaml"
     if saved_config.is_file():
         previous = yaml.safe_load(saved_config.read_text(encoding="utf-8"))
-        if previous != cfg:
+        runtime_only={'checkpoint_every_updates','persistence'}
+        if {k:v for k,v in previous.items() if k not in runtime_only} != {k:v for k,v in cfg.items() if k not in runtime_only}:
             raise ValueError("This run already has a different config/code hash. Restore the original or choose a new output directory.")
-    else:
-        saved_config.write_text(yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8")
+    saved_config.write_text(yaml.safe_dump(cfg, sort_keys=False), encoding="utf-8")
+    from repro.persistence import make_store,restore
+    store=make_store(cfg['persistence'])
+    if store:
+        for kind in ('best','last'): restore(store,output/(kind+'.pt'),kind)
     call("scripts/doctor.py", "--config", saved_config)
     last = output / "last.pt"
     extra = []
@@ -98,6 +110,9 @@ def train(cfg, config_path):
             raise FileNotFoundError(f"Pretraining checkpoint required before SLT: {source}")
         extra = ["--initialize-from", source]
     call("scripts/launch.py", "--config", saved_config, *extra)
+    if not training_finished(last,cfg.get('epochs',50)):
+        print('SESSION_SAVED: partial checkpoint retained; evaluation/completion deferred until training finishes.',flush=True)
+        return False
     best = output / "best.pt"
     if not best.is_file():
         raise FileNotFoundError("No best checkpoint; training has not completed successfully.")
@@ -120,6 +135,7 @@ def train(cfg, config_path):
     (output / "COMPLETED.json").write_text(json.dumps({"status": "measured reconstruction",
         "config": str(config_path), "best_checkpoint": str(best),
         "code_sha256": cfg["code_sha256"]}, indent=2), encoding="utf-8")
+    return True
 
 
 def main():
@@ -157,7 +173,7 @@ def main():
                 from scripts.deployment import valid_campaign
                 call("scripts/run_suite.py",'--output',ROOT/'runs'/valid_campaign(args.campaign))
             else:
-                train(cfg, args.config)
+                if train(cfg, args.config) is False: raise SystemExit(75)
 
 
 if __name__ == "__main__":

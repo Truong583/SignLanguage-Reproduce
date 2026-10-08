@@ -4,7 +4,7 @@ import hashlib
 import json
 import math
 import os
-from pathlib import Path
+from pathlib import Path,PurePosixPath
 import re
 import time
 from scripts.deployment import atomic_json
@@ -29,6 +29,27 @@ def contained_file(path,root,limit):
     return path.is_file() and not path.is_symlink() and path.resolve().is_relative_to(root) and path.stat().st_size<=limit
 
 
+def live_console(root,directory):
+    parts=PurePosixPath(str(directory).replace('\\','/')).parts
+    if parts and parts[0]=='runs': parts=parts[1:]
+    if len(parts)!=2 or parts[0]!='diagnostics' or parts[1] in {'.','..'}: return None
+    root=Path(root); candidate=root.joinpath(*parts,'console.log')
+    if candidate.is_file() and not candidate.is_symlink() and candidate.resolve().is_relative_to((root/'diagnostics').resolve()):
+        return candidate
+    return None
+
+
+def send_live_log(run,root,spool,status):
+    candidate=live_console(root,status.get('diagnostic_directory',''))
+    if candidate is None: return False
+    destination=Path(spool)/'live_log_tail.txt'
+    temporary=destination.with_suffix('.txt.tmp')
+    temporary.write_text(redact(read_tail(candidate,32*1024)),encoding='utf-8')
+    os.replace(temporary,destination)
+    run.save(str(destination),base_path=str(spool),policy='now')
+    return True
+
+
 def scan(run,root,spool,state):
     # Exact names and containment checks; do not glob arbitrary files into artifacts.
     histories=set(root.glob('*/history.jsonl')) | set(root.glob('*/*/history.jsonl'))
@@ -50,7 +71,7 @@ def scan(run,root,spool,state):
         name=report.parent.name
         if name in state.setdefault('sent',[]): continue
         value=json.loads(report.read_text())
-        if value.get('exit_code') in (0,130): state['sent'].append(name); continue
+        if value.get('exit_code') in (0,130,75): state['sent'].append(name); continue
         import wandb
         target=spool/'attachments'/name; target.mkdir(parents=True,exist_ok=True)
         artifact=wandb.Artifact('diagnostic-'+name,type='runtime-error')
@@ -88,6 +109,9 @@ def main():
                     group='teacher-machine',name='supervisor-'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d-%H%M%S'),
                     dir=str(spool),settings=wandb.Settings(console='off',disable_code=True,disable_git=True,
                       x_disable_stats=True,init_timeout=45),config={'scope':'PHOENIX14T-CSLR reconstruction','ci':False})
+                # Refill a new session from source history. The previous SDK may
+                # have queued metrics offline immediately before a power loss.
+                state['history']={}
             for filename in ('supervisor.json','status.json'):
                 path=root/filename
                 if not contained_file(path,root,128*1024): continue
@@ -96,13 +120,7 @@ def main():
                     if field in value: run.summary[filename+'/'+field]=value[field]
                 if filename=='status.json':
                     run.log({'seconds_without_console_output':value.get('seconds_without_console_output',0)})
-                    diagnostic=value.get('diagnostic_directory','')
-                    candidate=root/diagnostic/'console.log'
-                    if diagnostic and candidate.resolve().is_relative_to(root.resolve()) and candidate.is_file() and not candidate.is_symlink():
-                        # Live log tail bounded and re-redacted; checkpoint/data paths are never uploaded.
-                        tail=redact(read_tail(candidate,32*1024))
-                        destination=spool/'live_log_tail.txt'; destination.write_text(tail,encoding='utf-8')
-                        run.save(str(destination),base_path=str(spool),policy='now')
+                    send_live_log(run,root,spool,value)
             scan(run,root,spool,state)
             atomic_json(state_file,state)
             atomic_json(spool/'health.json',{'status':'connected','heartbeat_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),

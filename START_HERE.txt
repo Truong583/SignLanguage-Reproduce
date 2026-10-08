@@ -1,6 +1,8 @@
 MÁY LINUX CỦA CÔ: cấu hình một lần python3 setup_machine.py, sau đó python3 run.py
 LAPTOP: sửa code rồi python publish.py; máy cô tự lấy bản sửa khi không train.
 HƯỚNG DẪN CHÍNH: docs/MAY_CO_VA_LAPTOP.md
+LOG W&B / MẤT MẠNG / TẮT MÁY: docs/MAT_MANG_TAT_MAY.md
+CHẠY NỀN + TỰ CHẠY Ở BOOT: sau setup/cập nhật, python3 service.py install --single (trên máy Linux).
 Không CI. Lỗi/trạng thái gửi W&B riêng tư. Không cần SSH.
 Nếu chưa cấu hình giám sát: python run.py --once
 Điều kiện máy đích và kết quả: CHAY_MOT_LENH.md

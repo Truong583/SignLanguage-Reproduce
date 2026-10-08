@@ -17,7 +17,7 @@ COPY scripts ./scripts
 COPY tests ./tests
 COPY configs_repro ./configs_repro
 COPY run.py ./run.py
-COPY update.py diagnose.py status.py setup_machine.py ./
+COPY update.py diagnose.py status.py setup_machine.py service.py ./
 COPY docs/AUDIT.md docs/paper_targets.json docs/PHOENIX14T_SUITE.md ./docs/
 COPY MixSignGraph/utils/sacrebleu.py MixSignGraph/utils/Rouge.py MixSignGraph/utils/video_augmentation.py ./MixSignGraph/utils/
 ARG RUN_TESTS=0
