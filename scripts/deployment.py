@@ -116,6 +116,15 @@ def verify_source(root):
         if required not in files: raise ValueError(f'Release manifest omits required entry: {required}')
 
 
+def mount_points(root):
+    # Nested Docker binds need existing targets inside the readonly source bind.
+    root=Path(root).resolve()
+    for name in ('data','assets','runs'):
+        path=root/name
+        if not path.resolve().is_relative_to(root) or path.is_symlink(): raise ValueError('Unsafe source mount point')
+        path.mkdir(exist_ok=True)
+
+
 def valid_campaign(value):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}',value): raise ValueError('Campaign name: letters/numbers/underscore/hyphen only, max 80 characters')
     return value

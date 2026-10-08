@@ -65,6 +65,7 @@ def test_real_git_snapshot_is_pinned_and_source_only(tmp_path):
     workspace=tmp_path/'workspace'; workspace.mkdir()
     result=module.snapshot(source/'.git',commit,workspace)
     verify_source(result); assert result.name==commit and not (result/'.git').exists()
+    assert all((result/name).is_dir() and not any((result/name).iterdir()) for name in ('data','assets','runs'))
     assert module.snapshot(source/'.git',commit,workspace)==result
 
 

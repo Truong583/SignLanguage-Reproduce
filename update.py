@@ -18,7 +18,7 @@ import uuid
 import base64
 
 from scripts.deployment import (OperationLock,state_dir,release_path,active_release,settings,
-    atomic_json,training_hash,recipe_hash,valid_campaign,verify_source,image_name,workspace_label)
+    atomic_json,training_hash,recipe_hash,valid_campaign,verify_source,mount_points,image_name,workspace_label)
 from scripts.diagnostics import Recorder,redact
 
 SOURCE=Path(__file__).resolve().parent
@@ -81,7 +81,7 @@ def git(*args):
 
 def snapshot(repo_dir,commit,workspace):
     target=release_path(workspace,commit)
-    if target.exists(): verify_source(target); return target
+    if target.exists(): verify_source(target); mount_points(target); return target
     root=state_dir(workspace); temp=root/('snapshot-'+uuid.uuid4().hex); temp.mkdir()
     archive=root/(temp.name+'.tar')
     try:
@@ -93,7 +93,7 @@ def snapshot(repo_dir,commit,workspace):
                     raise ValueError('Git release contains unsafe paths, links or special files')
                 if name.parts and name.parts[0] in ('.git','.updates'): raise ValueError('Release contains runtime/Git metadata')
                 source.extract(member,temp,filter='data')
-        verify_source(temp); os.replace(temp,target)
+        verify_source(temp); mount_points(temp); os.replace(temp,target)
     finally:
         archive.unlink(missing_ok=True)
         if temp.exists():
@@ -112,7 +112,8 @@ def bootstrap_snapshot(workspace):
         for name in [*files,'BUNDLE_SHA256.json']:
             destination=temp/name; destination.parent.mkdir(parents=True,exist_ok=True)
             shutil.copy2(SOURCE/name,destination)
-        verify_source(temp); os.replace(temp,target)
+        verify_source(temp); mount_points(temp); os.replace(temp,target)
+    mount_points(target)
     return {'release_id':ident,'commit':None,'origin':'initial portable source'}
 
 

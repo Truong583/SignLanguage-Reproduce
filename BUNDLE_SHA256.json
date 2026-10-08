@@ -156,7 +156,7 @@
   "publish.py": "2aca8442eb39da86eda4235431e7cfaca0f6bf8d502acaa1dee668b6ff7afe17",
   "README.md": "04faba8e158465e22fca5505fadb9bce30df0efed7b6f5c0e8b334248eab1f04",
   "RELEASE.json": "f1deaf33b5756d5368688395a6a1ec9047bd0ff0df2729faf97d97570c7fe538",
-  "reports/VALIDATION.md": "92bae9c1e4208e1dbf81791d4134e63a5c6b2accfe7c58c344aac737bb197e98",
+  "reports/VALIDATION.md": "7fedfcf0abd3a48767311addded14a255e51501052d6c698d4b7714b0d76a7c9",
   "repro/__init__.py": "37a973153068c5f21161c8ec70ba9c0e57231f9654c151c846e37e9dffcf3b5c",
   "repro/ablation.py": "b28d1064448eae74aeedaf0a679573d05d1f136b0065c09bb7ec444a2fd2d012",
   "repro/data.py": "983b645bbd9f0d5ee37cd01f35dc7317667a0bc97ed2a49b2b2a98cf4fe2a33e",
@@ -187,7 +187,7 @@
   "scripts/compare_results.py": "691d556ce68ce2a084ecee50b92a0a8da3eba6f81d5fb4a1ea3a64d1f7a3fa75",
   "scripts/container.sh": "7084dcd3ad4effbd89770a9cd8fe490b72674da97b145f184ad8555895a31f39",
   "scripts/create_notebooks.py": "028e7a6c4993553d7e5665fee8b148da833b94f81663c6882c184fddcac53a31",
-  "scripts/deployment.py": "8feb57597179c558e5ca1863914724848348a274e376289d7f308c561c7c7076",
+  "scripts/deployment.py": "34415b626010ac57e1a53baf4607819bc31ebf4ba0fb0a6c4e4f93bc0e218613",
   "scripts/diagnostics.py": "3e9a7098710ff89117bfe1e2725de4f0e32a42a342f70cba7c5d04ff7f081c55",
   "scripts/doctor.py": "6f63ce807a937e0a0803647f02e8682268231b7088b496df51c92f1f3eb32ff6",
   "scripts/fetch_assets.py": "15a3ca71816b3b8d7341bd41b7b3359912b795d1168bd8f14cb2c78909622040",
@@ -337,10 +337,10 @@
   "status.py": "52ca244aee4aea42a11b520ce36c4d9b747625dd9a18e3bb1024903b4859c542",
   "tests/test_correctness.py": "8b7275779c86bfdd29783f5ba14f9443693e03d66d08d2329a6bfd52de7b3389",
   "tests/test_local_entry.py": "35d06ccd417e6afb817f52a05411e1fa5b07677a10ae7f03fe0de53836391902",
-  "tests/test_mlops.py": "2bd9d41ffe8fa4fef4a9ad3db74c121ff57f90d27002a450b375b6ef2b335032",
+  "tests/test_mlops.py": "a83f17a77db536409b4f1585e70c7c92d497b5b4f92c15edb5ce09ad2aaeb23b",
   "tests/test_suite.py": "7724d73917bab79d2f5061381fcaaad75fa3abbde44ae2a70b0d779344f44b4e",
   "tests/test_supervision.py": "97b75212c48183383b8d22ea684ae1b0fae88d6c0676020c923390bcd2d083bb",
   "tests/test_translation.py": "c24df2146272ea93f8b861ab67ca9cbe529493564c61773494506c1b44bf8c9c",
   "THIRD_PARTY_NOTICES.md": "987abc943134324f5250d71b19f1a1238dbc96a9a45cc2cf4d2c54fc4a2811d9",
-  "update.py": "acc5da805e179a6d6fe8c253f858c1181e9315b7c5d4095bb18cddec006b807b"
+  "update.py": "e1514bfb80162c39aeba7cda333bb88cc18decdf58a259645ffc665e563ac6e1"
 }

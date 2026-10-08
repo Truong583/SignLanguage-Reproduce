@@ -4,6 +4,7 @@
 
 - Toàn bộ tests local: **131 passed, 111.16 giây** (`runs/pytest-no-ci-release`). Bao gồm dữ liệu giả/GPU local, core numerical checks, supervisor, runtime redaction, khóa và snapshot Git. Không chạy chiến dịch PHOENIX thật.
 - Sau bổ sung bắt trạng thái worker bị tắt bất ngờ: nhóm kiểm tra orchestration/update/extraction chạy lại **34 passed, 1.28 giây** (`runs/pytest-supervision-final`).
+- Bổ sung mountpoints data/assets/runs rỗng trong snapshot chỉ đọc để các Docker bind con có target sẵn; nhóm kiểm tra chạy lại **34 passed, 1.23 giây** (`runs/pytest-mountpoints-final`). Các thư mục này không chứa dữ liệu/checkpoint/secret trong mã nguồn.
 - Supervisor được kiểm tra bằng subprocess/time giả: worker đã dừng trước khi kiểm tra update; cùng bản lỗi không chạy lại; giữ trạng thái qua restart; Docker observer không có GPU/data/weights/token GitHub/socket; project public/missing/schema không xác định bị từ chối trước telemetry init.
 - Snapshot thực từ Git local được giải nén, đối chiếu checksum; kiểm tra rollback, atomic activation thất bại, bảo toàn dữ liệu/checkpoint, chặn path traversal/symlink. Byte nguồn được giữ qua Git bằng `.gitattributes` để không đổi checkpoint fingerprint giữa Windows/Linux.
 - Không có `.github/workflows` CI. Docker build dùng `RUN_TESTS=0` mặc định; không chạy synthetic training mỗi cập nhật. Checksum, compile cú pháp, GPU probe, dữ liệu và checkpoint guards vẫn chạy.
