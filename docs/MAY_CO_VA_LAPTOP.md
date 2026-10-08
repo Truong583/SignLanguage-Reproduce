@@ -89,4 +89,4 @@ Colab/Kaggle tiếp tục chạy **Run all** từ ZIP trong cùng thư mục Dri
 
 ## Giới hạn đã biết
 
-Không có CI; chỉ kiểm tra nhanh trước kích hoạt và kiểm tra runtime khi chạy. Phần tự nhận diện lỗi chỉ dựa vào log/exit code, không chứng minh mô hình đúng về khoa học. Chưa huấn luyện PHOENIX thật, chưa nghiệm thu Docker/NCCL hay W&B bằng tài khoản/máy cô. Chỉ báo cáo đã tái lập khi có số đo dev/test thật và đối chiếu paper; các phần tác giả chưa cung cấp phải được nêu rõ trong báo cáo.
+Không có CI; chỉ kiểm tra nhanh trước kích hoạt và kiểm tra runtime khi chạy. Phần tự nhận diện lỗi chỉ dựa vào log/exit code, không chứng minh mô hình đúng về khoa học. Log máy cô xác nhận Docker/GPU RTX 3060, dịch vụ systemd, tự lấy bản v10 từ GitHub, W&B, dữ liệu PHOENIX14T đã giải nén và train thật hơn 361 micro-step trước lỗi VRAM. Chưa có epoch/đánh giá hoàn tất; chưa nghiệm thu nhiều GPU/NCCL hoặc khởi động lại sau mất điện. V11 chuyển activation sang RAM và tự tạo campaign mới để giữ checkpoint cũ. Chỉ báo cáo đã tái lập khi có số đo dev/test thật và đối chiếu paper; các phần tác giả chưa cung cấp phải được nêu rõ trong báo cáo.

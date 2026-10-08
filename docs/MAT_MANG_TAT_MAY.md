@@ -56,15 +56,15 @@ Bản v10 sửa kiểm tra RGB train theo chính sách temporal resampling đã 
 
 Nếu service đang hoạt động và pipeline vừa dừng do lỗi này, không chạy thêm `run.py` hay tải lại dữ liệu. Sau khi bản sửa được publish, supervisor sẽ lấy bản mới khi kiểm tra GitHub, thường khoảng 5 phút một lần trong thời gian chờ. Log lượt mới phải có `PHOENIX14T already prepared` và báo cáo doctor trước khi train. Cần mạng để lấy bản sửa; `active (running)` của service chỉ chứng minh supervisor đang chạy, không chứng minh huấn luyện đã thành công.
 
-## Khi mất mạng hoặc kết nối W&B bị ngắt
-
-### CUDA out of memory sau khi bắt đầu train
+## CUDA out of memory sau khi bắt đầu train
 
 V11 chuyển các tensor trung gian cần cho backward trong bước trích xuất đặc trưng sang RAM bằng PyTorch save_on_cpu. Không thay batch, độ phân giải, nhãn, frame, dropout hoặc graph K. Tốn thêm RAM và truyền dữ liệu CPU↔GPU; tốc độ có thể giảm. Không đảm bảo mọi clip đều vừa VRAM/RAM trên mọi máy.
 
 Nếu service đang chờ sau lỗi v10, supervisor lấy v11 và tự tạo campaign mới theo DEPLOYMENT_POLICY.json do fingerprint code đổi. Không cần bấm Stop run trên W&B hoặc chạy run.py thêm. Archive, dữ liệu giải nén, weights và checkpoint cũ được giữ. Log lượt mới phải có release v11 và `Activation storage: cpu`. Nếu lại OOM, log bổ sung ID mẫu và video_shape giúp chẩn đoán chính xác.
 
 Các run supervisor là phiên giám sát CPU. Trạng thái Running không chứng minh GPU đang train: kiểm tra `status.json/status`, `supervisor.json/outcome` và heartbeat mới nhất trong Summary. V11 thêm xử lý SIGTERM và SDK finish để kết thúc phiên observer khi cập nhật; phiên cũ v9/v10 có thể còn trạng thái lỗi thời. Không thể bảo đảm gửi trạng thái cuối nếu bị kill cứng hoặc mất mạng.
+
+## Khi mất mạng hoặc kết nối W&B bị ngắt
 
 - Đang tải: timeout được thử lại tối đa8 lần, giữ `.part`. Server hỗ trợ Range thì tải tiếp; nếu không thì phải tải lại archive. Hết giới hạn thì chờ, không coi là lỗi mô hình. Gửi log nếu cần xử lý; không xóa `.part`.
 - Đã đủ data, weights và image: train container vốn tắt mạng nên tiếp tục được. Host dùng lại image đã dựng; không gọi registry để dựng lại nếu tag đã có.

@@ -139,3 +139,5 @@ v11 stores saved feature-path activations on CPU during CUDA training using the 
 
 The observer now handles SIGTERM and calls the SDK finish method in finally. The targeted shutdown test verifies finish(exit_code=0) and persisted stopped health status. Previous v9/v10 sessions killed without explicit finish may remain stale in the dashboard; run status alone is not proof that GPU training is active. Forced kill or network failure can still prevent final status delivery. This change does not remove previous W&B runs or their logs.
 
+After adding OOM sample details, three focused checks passed (actual tiny CPU checkpoint recovery/resume, CPU model training and observer shutdown), and modified modules compiled. Both notebook code-cell sets compiled after assigning a fresh v11 campaign default; their cloud runtimes were not executed locally.
+
