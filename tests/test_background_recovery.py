@@ -55,6 +55,20 @@ def test_system_service_preserves_single_scope_uses_regular_user_and_orders_dock
     assert service.service_name(tmp_path)!=service.service_name(tmp_path/'another')
 
 
+def test_service_working_directory_is_a_scalar_path_not_a_quoted_argument():
+    text=service.unit('/mnt/annie/Truong_K17/SignLanguage-Reproduce','/usr/bin/python3','annie')
+    line=next(line for line in text.splitlines() if line.startswith('WorkingDirectory='))
+    assert line=='WorkingDirectory=/mnt/annie/Truong_K17/SignLanguage-Reproduce'
+    assert 'WorkingDirectory=/mnt/project%% name' in service.unit('/mnt/project% name','/usr/bin/python3','annie')
+    assert 'ExecStart="/usr/bin/python3" "/mnt/project%% name/service.py"' in service.unit('/mnt/project% name','/usr/bin/python3','annie')
+
+
+@pytest.mark.parametrize('path',['/mnt/invalid\npath','/mnt/invalid\rpath','/mnt/invalid\x00path'])
+def test_service_rejects_control_characters_in_workspace(path):
+    with pytest.raises(ValueError,match='Control characters'):
+        service.unit(path,'/usr/bin/python3','annie')
+
+
 def test_service_waits_for_docker_then_executes_single_run(monkeypatch):
     results=[type('R',(),{'returncode':1,'stdout':''})(),type('R',(),{'returncode':0,'stdout':'linux\n'})()]
     sleeps=[]; executed=[]

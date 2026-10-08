@@ -2,7 +2,7 @@
 import argparse
 import getpass
 import os
-from pathlib import Path
+from pathlib import Path,PurePosixPath
 import shlex
 import shutil
 import subprocess
@@ -20,6 +20,14 @@ def quote(value):
     return '"'+str(value).replace('\\','\\\\').replace('"','\\"').replace('%','%%').replace('\n','\\n')+'"'
 
 
+def working_directory(value):
+    # This scalar is parsed as a path, unlike the word lists in ExecStart.
+    value=str(value)
+    if any(ord(c)<32 or ord(c)==127 for c in value):
+        raise ValueError('Control characters are not supported in the workspace path')
+    return value.replace('%','%%')
+
+
 def unit(root,python,user,suite=False):
     if not user or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-' for c in user):
         raise ValueError('Unsupported account name')
@@ -27,8 +35,8 @@ def unit(root,python,user,suite=False):
     return '\n'.join(['[Unit]','Description=SignLanguage supervised PHOENIX14T run',
       'Requires=docker.service','After=docker.service network-online.target','Wants=network-online.target',
       'RequiresMountsFor='+quote(root),
-      '[Service]','Type=simple','User='+user,'Group=docker','WorkingDirectory='+quote(root),
-      'ExecStart='+quote(python)+' '+quote(Path(root)/'service.py')+' _run '+mode,
+      '[Service]','Type=simple','User='+user,'Group=docker','WorkingDirectory='+working_directory(root),
+      'ExecStart='+quote(python)+' '+quote(PurePosixPath(root)/'service.py')+' _run '+mode,
       'Environment=PYTHONUNBUFFERED=1','Restart=on-failure','RestartSec=30',
       'KillMode=mixed','TimeoutStopSec=180','UMask=0077',
       '[Install]','WantedBy=multi-user.target',''])
@@ -62,13 +70,16 @@ def main():
     if os.getuid()==0: raise RuntimeError('Use python3 service.py install as your regular account, not sudo python.')
     import pwd
     user=pwd.getpwuid(os.getuid()).pw_name
-    if not shutil.which('docker') or not shutil.which('systemctl'): raise RuntimeError('Docker and systemd are required.')
+    if not all(shutil.which(command) for command in ('docker','systemctl','systemd-analyze')):
+        raise RuntimeError('Docker, systemctl and systemd-analyze are required.')
     root=state_dir(ROOT)
     if not (root/'machine.json').exists() or not (root/'wandb_key').exists(): raise RuntimeError('Configure setup_machine.py first.')
     with OperationLock(ROOT,'supervisor.lock'),OperationLock(ROOT):
         verify_source(ROOT)
         source=root/'system-service.service'
         source.write_text(unit(ROOT,Path(sys.executable).resolve(),user,args.suite),encoding='utf-8')
+        # Validate with the target machine's parser before changing its service.
+        subprocess.run(['systemd-analyze','verify',str(source)],check=True)
         print('Installing '+name+' as '+user+' for '+('68-run suite' if args.suite else 'main PHOENIX14T CSLR run'),flush=True)
         subprocess.run(['sudo','install','-m','0644',str(source),'/etc/systemd/system/'+name],check=True)
         subprocess.run(['sudo','systemctl','daemon-reload'],check=True)

@@ -115,3 +115,9 @@ GPU_IDS=none bash scripts/container.sh python scripts/integration_check.py --dir
 ```
 
 Sau đó chạy doctor, một thí nghiệm ngắn với dataset thật, kiểm tra log/VRAM/loss/checkpoint rồi mới chạy đủ epoch. Giữ kết quả nghiệm thu mới cùng hồ sơ nghiên cứu; không thay thế kết quả fail bằng tuyên bố đã tái lập paper.
+# Systemd service correction (2026-10-08, v9)
+
+The Ubuntu host reported a bad unit file setting because WorkingDirectory is a scalar path, not an ExecStart argument list; quoting it made its first character a double quote rather than `/`. v9 emits the scalar path directly (escapes `%`, rejects control characters), retains argument quoting for ExecStart, and verifies the generated unit with the target's systemd-analyze before installation.
+
+57 related deployment, supervision, single-run and background tests passed; the previously exercised numerical integration test was deselected for this runtime-only fix. On local Ubuntu/systemd 255, systemd-analyze verify reproduced the old failure (`WorkingDirectory= path is not absolute`) with exit 1 and accepted the corrected generated unit with exit 0 using a stub Docker dependency. Verification did not install/start a local service. Teacher host is Ubuntu 22.04: its installer will verify with its own systemd version before install. Teacher service startup and actual paper training remain to be confirmed there. No training code/configuration or dataset/checkpoint file was changed.
+

@@ -36,6 +36,24 @@ python3 service.py stop
 
 ## Khi mất mạng
 
+## Nếu cài service báo "bad unit file setting"
+
+Bản v9 sửa `WorkingDirectory` thành đường dẫn scalar không bọc dấu ngoặc kép. `ExecStart` vẫn giữ cách quote từng đối số. Trước khi cài, helper chạy `systemd-analyze verify` bằng parser ngay trên máy đích; cấu hình sai sẽ không được cài đè. Bản sửa không thay code huấn luyện hoặc xóa file dữ liệu `.part`.
+
+Nếu lỗi này xuất hiện sau khi Docker dựng thành công, lấy bản sửa rồi cài lại:
+
+```bash
+cd /mnt/annie/Truong_K17/SignLanguage-Reproduce &&
+git pull --ff-only &&
+python3 update.py --automatic &&
+python3 service.py install --single &&
+python3 service.py status
+```
+
+Chỉ đóng Terminal sau khi thấy service `active (running)`. Nếu vẫn lỗi, gửi kết quả `systemctl status signlanguage-8afccb21070c.service --no-pager -l` và `sudo journalctl -u signlanguage-8afccb21070c.service -n 50 --no-pager`. Không chạy thêm `run.py` khi service đã hoạt động.
+
+## Khi mất mạng hoặc kết nối W&B bị ngắt
+
 - Đang tải: timeout được thử lại tối đa8 lần, giữ `.part`. Server hỗ trợ Range thì tải tiếp; nếu không thì phải tải lại archive. Hết giới hạn thì chờ, không coi là lỗi mô hình. Gửi log nếu cần xử lý; không xóa `.part`.
 - Đã đủ data, weights và image: train container vốn tắt mạng nên tiếp tục được. Host dùng lại image đã dựng; không gọi registry để dựng lại nếu tag đã có.
 - W&B/kiểm tra GitHub tạm thời không truy cập được. Log/metrics gốc vẫn ở runs. Khi mạng trở lại observer thử kết nối lại, gửi log hiện tại và scan lịch sử. Khi observer được khởi động lại, history được đọc lại cho session mới để tránh bỏ sót metrics chỉ nằm trong bộ đệm offline của session cũ. Chỉ các scalar và log được gửi, không video/checkpoint/key.
