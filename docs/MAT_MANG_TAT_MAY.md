@@ -34,8 +34,6 @@ python3 service.py stop
 
 Đợi status hiển thị inactive rồi dùng Shutdown của Ubuntu. Service được bật ở boot nên lần bật máy sau sẽ chạy lại. Muốn tạm giữ máy không tự train ở các lần boot sau thì `sudo systemctl disable <tên-unit>`; tên unit được in khi install và lưu ở `.updates/service.json`. Không xóa checkpoint hoặc `.part` để dừng chạy.
 
-## Khi mất mạng
-
 ## Nếu cài service báo "bad unit file setting"
 
 Bản v9 sửa `WorkingDirectory` thành đường dẫn scalar không bọc dấu ngoặc kép. `ExecStart` vẫn giữ cách quote từng đối số. Trước khi cài, helper chạy `systemd-analyze verify` bằng parser ngay trên máy đích; cấu hình sai sẽ không được cài đè. Bản sửa không thay code huấn luyện hoặc xóa file dữ liệu `.part`.
