@@ -18,6 +18,7 @@ def redact(text):
     text=re.sub(r'-----BEGIN [^-]*PRIVATE KEY-----.*?-----END [^-]*PRIVATE KEY-----','[REDACTED PRIVATE KEY]',text,flags=re.S)
     text=re.sub(r'(?i)(Bearer|Basic)\s+[A-Za-z0-9_.~+/=-]+',r'\1 [REDACTED]',text)
     text=re.sub(r'\b(?:github_pat_|gh[pousr]_)[A-Za-z0-9_]+','[REDACTED GITHUB TOKEN]',text)
+    text=re.sub(r'\bwandb_v1_[A-Za-z0-9_-]+','[REDACTED WANDB TOKEN]',text)
     text=re.sub(r'(?i)((?:refresh_token|access_token|client_secret|password|api_key)["\x27]?\s*[:=]\s*["\x27]?)[^"\x27\s,}&]+',r'\1[REDACTED]',text)
     text=re.sub(r'https://[^/\s@]+@','https://[REDACTED]@',text)
     text=re.sub(r'\b(?:1//|ya29\.)[A-Za-z0-9_.-]+','[REDACTED GOOGLE TOKEN]',text)

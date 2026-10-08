@@ -1,5 +1,7 @@
 # Sửa trên laptop, huấn luyện trên máy Linux của cô
 
+**Cập nhật 08/10/2026:** người dùng đã chuyển repository sang **Public**. Máy cô tải/cập nhật mã mà không cần đăng nhập hoặc token GitHub. `setup_machine.py` tự nhận diện chế độ này; chỉ hỏi W&B key. W&B project vẫn phải riêng tư. Các hướng dẫn token GitHub bên dưới chỉ áp dụng nếu sau này đổi repository lại Private. Không đưa `.updates`, key, dữ liệu hay checkpoint lên repo Public.
+
 Không có CI/GitHub Actions. Máy cô không cần SSH hay mở cổng vào. Chỉ cần Internet ra ngoài, Python 3.12+, Git, Docker và NVIDIA Container Toolkit đã được chủ máy cài sẵn. Script không tự cài driver, đổi hệ thống hoặc xóa công việc khác.
 
 Luồng sử dụng:
@@ -21,7 +23,7 @@ flowchart LR
 python publish.py
 ```
 
-Lệnh này dùng đăng nhập GitHub hiện có của Git trên laptop. Nó chỉ đẩy mã nguồn trong danh sách checksum; không đẩy dữ liệu, checkpoint, token hay thư mục `.updates`. Nó xác nhận repository Private trước khi đẩy. Không bật GitHub Actions và không chạy thử huấn luyện.
+Lệnh này dùng đăng nhập GitHub hiện có của Git trên laptop. Nó chỉ đẩy mã nguồn trong danh sách checksum; không đẩy dữ liệu, checkpoint, token hay thư mục `.updates`. Nó giữ nguyên chế độ Public/Private do bạn đã chọn. Không bật GitHub Actions và không chạy thử huấn luyện.
 
 **Tạo W&B:** đăng ký/đăng nhập `https://wandb.ai`, tạo project tên `signlanguage-reproduction`, chọn **Private** (hoặc Team/Restricted nếu dùng team). Ghi lại tên tài khoản/team và lấy API key trong User Settings. Nên dùng tài khoản nghiên cứu riêng. Hệ thống kiểm tra project đã tồn tại và không công khai trước khi gửi log; không tự tạo project công khai. Cấu hình phạm vi xem ở [tài liệu W&B](https://docs.wandb.ai/guides/hosting/iam/access-management/restricted-projects/).
 
@@ -33,7 +35,7 @@ Lệnh này dùng đăng nhập GitHub hiện có của Git trên laptop. Nó ch
 python3 setup_machine.py
 ```
 
-Nhập tên tài khoản/team W&B, token GitHub vừa tạo và API key W&B khi được hỏi. Hai secret được nhập ẩn, lưu tại `.updates/` với quyền chỉ tài khoản Linux của bạn đọc/ghi. Không cần quyền Google Drive của cá nhân trên máy cô. Helper kiểm tra GitHub Private và W&B riêng tư; lỗi ở bước này thì chưa bắt đầu train.
+Nhập tên tài khoản/team W&B và API key W&B khi được hỏi. Chỉ repo Private mới hỏi token GitHub. Secret được nhập ẩn, lưu tại `.updates/` với quyền chỉ tài khoản Linux của bạn đọc/ghi. Không cần quyền Google Drive của cá nhân trên máy cô. Helper kiểm tra W&B riêng tư; lỗi ở bước này thì chưa bắt đầu train. Với project hiện tại dùng `python3 setup_machine.py --entity truong583-research`.
 
 Nếu archive PHOENIX đã có trên Drive: tải một lần xuống máy cô và đặt ở **`data/phoenix-2014-T.v3.tar.gz`**. Không giải nén bằng tay. Nếu chưa có, chương trình tự tải bản chính thức RWTH. Dữ liệu giải nén, manifests và weights được giữ local để các lượt sau không tải lại. Cần ít nhất 150 GiB trống cho chuẩn bị; còn phải chừa dung lượng Docker và checkpoint của 68 lượt. Đừng bắt đầu nếu ổ không đủ cho toàn chiến dịch.
 

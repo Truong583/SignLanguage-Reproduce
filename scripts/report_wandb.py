@@ -86,7 +86,7 @@ def main():
                 run=wandb.init(entity=cfg['wandb_entity'],project=cfg['wandb_project'],job_type='observer',
                     group='teacher-machine',name='supervisor-'+datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d-%H%M%S'),
                     dir=str(spool),settings=wandb.Settings(console='off',disable_code=True,disable_git=True,
-                      _disable_stats=True,init_timeout=45),config={'scope':'PHOENIX14T-CSLR reconstruction','ci':False})
+                      x_disable_stats=True,init_timeout=45),config={'scope':'PHOENIX14T-CSLR reconstruction','ci':False})
             for filename in ('supervisor.json','status.json'):
                 path=root/filename
                 if not contained_file(path,root,128*1024): continue

@@ -1,5 +1,11 @@
 # Báo cáo kiểm tra — cập nhật 2026-10-08
 
+## Repo Public và API key W&B mới
+
+- Người dùng chủ động chuyển repository Public. Setup tự nhận diện Public, không hỏi/lưu GitHub token, còn updater bỏ header GitHub auth; W&B project vẫn được kiểm tra riêng tư. Bộ tests liên quan **37 passed, 2.35 giây** (`runs/pytest-public-repo`). Bao gồm Public/Private setup, khóa/snapshot, redaction key mới, mount và orchestration. Không có CI trên server.
+- SDK W&B đổi từ0.18.7 sang **0.27.0**, dùng Settings `x_disable_stats`. Kiểm chứng bằng package cài vào thư mục tách biệt ngoài dự án: Settings chấp nhận định dạng key mới với key giả, import cùng protobuf **5.28.3**, init offline, log scalar, finish thành công. Không dùng key thật đã xuất hiện trong chat, không đăng nhập hoặc upload dữ liệu người dùng. Xác thực W&B online vẫn cần làm trên máy cô.
+- Mã tính toán trong `repro/`, recipe và fingerprint checkpoint giữ nguyên. Thay SDK giám sát không xác nhận tương đương kết quả giữa các image; Docker lưu environment lock khi build.
+
 ## Luồng giám sát không CI
 
 - Toàn bộ tests local: **131 passed, 111.16 giây** (`runs/pytest-no-ci-release`). Bao gồm dữ liệu giả/GPU local, core numerical checks, supervisor, runtime redaction, khóa và snapshot Git. Không chạy chiến dịch PHOENIX thật.

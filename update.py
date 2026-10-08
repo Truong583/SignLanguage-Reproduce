@@ -43,7 +43,9 @@ def git_env():
         env['GIT_SSH_COMMAND']=shlex.join(['ssh','-i',str(key),'-o','IdentitiesOnly=yes',
             '-o','StrictHostKeyChecking=yes','-o','BatchMode=yes','-o','UserKnownHostsFile='+str(hosts)])
     token=state_dir(WORKSPACE)/'github_token'
-    if token.exists():
+    machine=state_dir(WORKSPACE)/'machine.json'
+    public=machine.exists() and json.loads(machine.read_text()).get('public_repo',False)
+    if token.exists() and not public:
         value=token.read_text().strip()
         encoded=base64.b64encode(('x-access-token:'+value).encode()).decode()
         env['GIT_CONFIG_COUNT']='1'; env['GIT_CONFIG_KEY_0']='http.https://github.com/.extraheader'

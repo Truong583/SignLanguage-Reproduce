@@ -58,6 +58,41 @@ def test_attachments_must_be_contained_and_bounded(tmp_path):
 def test_redaction_handles_git_http_header_and_prefix_tokens():
     value=redact('AUTHORIZATION: basic cHJpdmF0ZQ== github_pat_12345 ghp_12345 WANDB_API_KEY=key123')
     assert all(secret not in value for secret in ('cHJpdmF0ZQ','github_pat_12345','ghp_12345','key123'))
+    assert 'wandb_v1_dummy_test_only' not in redact('wandb_v1_dummy_test_only')
+
+
+@pytest.mark.parametrize('public',[True,False])
+def test_setup_public_repo_skips_github_token_and_keeps_wandb_private(tmp_path,monkeypatch,public):
+    import setup_machine as module
+    import urllib.error
+    monkeypatch.setattr(module,'ROOT',tmp_path)
+    monkeypatch.setattr(module.sys,'argv',['setup_machine.py','--entity','example-team'])
+    asked=[]; privacy=[]
+    def prompt(label):
+        asked.append(label)
+        return 'dummy_github' if 'GitHub' in label else 'dummy_wandb'
+    def opener(request,timeout):
+        if not public and not request.get_header('Authorization'):
+            raise urllib.error.HTTPError(request.full_url,404,'Private',{},None)
+        return io.BytesIO(json.dumps({'private':not public}).encode())
+    monkeypatch.setattr(module.getpass,'getpass',prompt)
+    monkeypatch.setattr(module.urllib.request,'urlopen',opener)
+    monkeypatch.setattr(module,'require_private',lambda *args:privacy.append(args))
+    module.main()
+    cfg=json.loads((tmp_path/'.updates/machine.json').read_text())
+    assert cfg['public_repo']==public and privacy==[('example-team','signlanguage-reproduction','dummy_wandb')]
+    assert len(asked)==(1 if public else 2)
+    assert (tmp_path/'.updates/github_token').exists()==(not public)
+
+
+def test_public_updates_send_no_github_auth_header(tmp_path,monkeypatch):
+    import update as module
+    monkeypatch.setattr(module,'WORKSPACE',tmp_path)
+    root=tmp_path/'.updates'; root.mkdir()
+    (root/'machine.json').write_text('{"public_repo":true}')
+    (root/'github_token').write_text('dummy-stale-token')
+    monkeypatch.delenv('GIT_CONFIG_COUNT',raising=False)
+    assert 'GIT_CONFIG_VALUE_0' not in module.git_env()
 
 
 def test_supervisor_waits_after_failure_and_updates_only_after_worker_exit(tmp_path,monkeypatch):

@@ -30,7 +30,8 @@ def main():
     request=urllib.request.Request('https://api.github.com/repos/Truong583/SignLanguage-Reproduce',
         headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'})
     with urllib.request.urlopen(request,timeout=30) as response: repo=json.load(response)
-    if not repo.get('private'): raise RuntimeError('Publish stopped: target repository must be Private.')
+    if not repo.get('private'):
+        print('Target repository is Public (user-selected visibility); publishing source only.')
     with OperationLock(ROOT):
         subprocess.run([sys.executable,'scripts/verify_bundle.py','--write'],cwd=ROOT,check=True)
         inventory=json.loads((ROOT/'BUNDLE_SHA256.json').read_text())
@@ -55,11 +56,11 @@ def main():
             dest=target/name; dest.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(source,dest)
         command('add','-A',cwd=target)
         if not command('status','--porcelain',cwd=target):
-            print('Private repository already has this source.'); return
+            print('Repository already has this source.'); return
         command('-c','user.name=Truong583','-c','user.email=Truong583@users.noreply.github.com',
             'commit','-m','Update PHOENIX14T CSLR reproduction and supervised deployment',cwd=target)
         command('push',REPO,'HEAD:refs/heads/main',cwd=target)
-        print('Published source to private repository: '+REPO)
+        print('Published source to repository: '+REPO)
         print('Revision: '+command('rev-parse','HEAD',cwd=target))
 
 

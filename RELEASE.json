@@ -1,5 +1,5 @@
 {
-  "version": "phoenix14t-cslr-supervised-no-ci-v2",
+  "version": "phoenix14t-cslr-public-repo-wandb-v1-v3",
   "experiments": 68,
   "quantitative_configurations": 67,
   "qualitative_reference_configurations": 1,

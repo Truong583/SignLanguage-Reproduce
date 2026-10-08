@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import sys
 import urllib.request
+import urllib.error
 from scripts.deployment import state_dir,atomic_json,valid_campaign
 from scripts.privacy import require_private
 
@@ -25,16 +26,24 @@ def main():
     if os.name!='nt': os.chmod(root,0o700)
     entity=a.entity or input('W&B account/team name: ').strip()
     if not entity: raise ValueError('W&B entity is required')
-    token=getpass.getpass('GitHub fine-grained token (only this repo; Contents Read-only): ').strip()
     request=urllib.request.Request('https://api.github.com/repos/Truong583/SignLanguage-Reproduce',
-        headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'})
-    repo=json.load(urllib.request.urlopen(request,timeout=30))
-    if not repo['private']: raise RuntimeError('Repository is not Private; setup stopped.')
+        headers={'Accept':'application/vnd.github+json'})
+    token=None
+    try:
+        with urllib.request.urlopen(request,timeout=30) as response: repo=json.load(response)
+    except urllib.error.HTTPError as exc:
+        if exc.code!=404: raise
+        token=getpass.getpass('Private GitHub repo: fine-grained token (Contents Read-only): ').strip()
+        request.add_header('Authorization','Bearer '+token)
+        with urllib.request.urlopen(request,timeout=30) as response: repo=json.load(response)
+    public=not repo['private']
+    if not public and not token: raise RuntimeError('Private repository requires a scoped token.')
     key=getpass.getpass('W&B API key for the dedicated private research account/project: ').strip()
     require_private(entity,a.project,key)
-    secret(root/'github_token',token); secret(root/'wandb_key',key)
+    if token: secret(root/'github_token',token)
+    secret(root/'wandb_key',key)
     machine={'schema':1,'repo':'https://github.com/Truong583/SignLanguage-Reproduce.git','branch':'main',
-      'wandb_entity':entity,'wandb_project':a.project,'poll_seconds':300,
+      'wandb_entity':entity,'wandb_project':a.project,'poll_seconds':300,'public_repo':public,
       'base_image':'pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime'}
     atomic_json(root/'machine.json',machine)
     atomic_json(root/'config.json',{'repo':machine['repo'],'branch':'main','campaign':'phoenix14t_cslr_suite_seed0'})
