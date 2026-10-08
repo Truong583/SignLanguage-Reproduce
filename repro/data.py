@@ -94,9 +94,11 @@ class SignDataset(Dataset):
                             image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
                         frames.append(np.asarray(image).copy())
                 video = torch.from_numpy(np.stack(frames)).permute(0, 3, 1, 2).float().div_(255)
+                del frames
                 mean = video.new_tensor([.485, .456, .406])[None, :, None, None]
                 std = video.new_tensor([.229, .224, .225])[None, :, None, None]
-                video = (video - mean) / std
+                # Same FP32 operations/order without two full-clip temporaries.
+                video.sub_(mean).div_(std)
         return video, row
 
 

@@ -30,6 +30,8 @@ def check_data(cfg,full=False):
     for split,rows in sets.items():
         unknown=0
         short=[]
+        maximum_frames=0
+        maximum_padded_frames=0
         for row in rows:
             if row['id'] in seen: raise ValueError(f'Split overlap: {row["id"]}')
             seen.add(row['id'])
@@ -49,6 +51,9 @@ def check_data(cfg,full=False):
             labels,_,required=encode_targets([row],vocab,cfg.get('target_field','gloss'))
             unknown+=int((labels==1).sum())
             needed=int(required[0]); steps=(length+3)//4
+            maximum_frames=max(maximum_frames,length)
+            upper=max(int(length*1.2),4*needed-3) if split=='train' and cfg.get('input_kind','rgb')=='rgb' else length
+            maximum_padded_frames=max(maximum_padded_frames,((upper+3)//4)*4+12)
             if needed>steps:
                 detail={'id':row['id'],'source_frames':length,'source_ctc_steps':steps,
                         'required_ctc_steps':needed}
@@ -64,6 +69,8 @@ def check_data(cfg,full=False):
                 short.append(detail)
             if cfg.get('task')=='slt' and not row.get('text'): raise ValueError(f'Missing translation: {row["id"]}')
         summary[split]={'samples':len(rows),'unknown_target_tokens':unknown,
+                        'maximum_source_frames':maximum_frames,
+                        'maximum_padded_frames_upper_bound':maximum_padded_frames,
                         'ctc_length_adjusted_samples':len(short) if split=='train' else 0,
                         'decode_length_limited_samples':len(short) if split!='train' else 0,
                         'short_sequence_examples':short[:5]}

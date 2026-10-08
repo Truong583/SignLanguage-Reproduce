@@ -1,5 +1,6 @@
 import gc
 import json
+import os
 from types import SimpleNamespace
 
 import pytest
@@ -11,7 +12,8 @@ from scripts import report_wandb
 
 @pytest.mark.skipif(not torch.cuda.is_available(),reason='CUDA required to verify GPU/CPU activation transfers')
 @pytest.mark.parametrize('precision',['fp32','fp16'])
-def test_real_rgb_ctc_offload_matches_loss_gradients_bn_rng_and_reduces_gpu_memory(precision,monkeypatch):
+@pytest.mark.parametrize('storage',['cpu','cpu_checkpoint'])
+def test_real_rgb_ctc_offload_matches_loss_gradients_bn_rng_and_reduces_gpu_memory(precision,storage,monkeypatch):
     torch.set_num_threads(2)
     torch.manual_seed(51)
     torch.backends.cudnn.benchmark=False
@@ -27,10 +29,10 @@ def test_real_rgb_ctc_offload_matches_loss_gradients_bn_rng_and_reduces_gpu_memo
     # production training keeps the configured dropout of 0.3.
     model.temporal.rnn.dropout=0.
     initial={name:tensor.detach().cpu().clone() for name,tensor in model.state_dict().items()}
-    video=torch.randn(1,16,3,224,224,device='cuda')
-    lengths=torch.tensor([16]); rows=[{'id':'sample','gloss':'a'}]
+    video=torch.randn(1,20,3,224,224,device='cuda')
+    lengths=torch.tensor([20]); rows=[{'id':'sample','gloss':'a'}]
     results=[]
-    for mode in ('none','none','cpu'):
+    for mode in ('none','none',storage):
         model.load_state_dict(initial); model.zero_grad(set_to_none=True)
         model.activation_offload=mode
         torch.manual_seed(91)
@@ -62,7 +64,7 @@ def test_real_rgb_ctc_offload_matches_loss_gradients_bn_rng_and_reduces_gpu_memo
     assert torch.equal(actual[3],reference[3])
     assert actual[4]<reference[4]*.9
     print(json.dumps({'precision':precision,'baseline_peak_mib':reference[4]/1024**2,
-                      'cpu_storage_peak_mib':actual[4]/1024**2}))
+                      'activation_storage':storage,'storage_peak_mib':actual[4]/1024**2}))
     del model,video,results
     gc.collect(); torch.cuda.empty_cache()
 
@@ -90,20 +92,27 @@ def test_long_rgb_main_hidden_size_fp16_has_finite_gradients_and_adam_update():
     torch.set_num_threads(2); torch.manual_seed(9)
     cfg={'task':'cslr','input_kind':'rgb','hidden_size':1024,'allow_random_init':True,
          'hsg':True,'graph_conv':'edge','distillation':25.}
-    model=SignModel(cfg,['<blank>','<unk>','a']).cuda().train()
-    assert model.activation_offload=='cpu' and model.temporal.rnn.dropout==.3
+    vocab=['<blank>','<unk>','a']+[f'gloss{i}' for i in range(1293)]
+    model=SignModel(cfg,vocab).cuda().train()
+    assert model.activation_offload=='cpu_checkpoint' and model.temporal.rnn.dropout==.3
     optimizer=torch.optim.Adam(model.parameters(),lr=1e-4,weight_decay=1e-4)
-    video=torch.randn(1,128,3,224,224,device='cuda')
+    frames=int(os.environ.get('SIGNLANGUAGE_STRESS_FRAMES','128'))
+    video=torch.randn(1,frames,3,224,224,device='cuda')
     torch.cuda.reset_peak_memory_stats()
     with torch.autocast('cuda',dtype=torch.float16):
-        loss=model(video,torch.tensor([128]),[{'id':'long','gloss':'a'}])
+        loss=model(video,torch.tensor([frames]),[{'id':'long','gloss':'a'}])
     assert torch.isfinite(loss)
     loss.backward()
+    assert all(int(value)==1 for name,value in model.named_buffers() if name.endswith('num_batches_tracked'))
     assert all(torch.isfinite(p.grad).all() for p in model.parameters() if p.grad is not None)
     before=model.classifier.weight.detach().clone()
     optimizer.step(); torch.cuda.synchronize()
     assert torch.isfinite(model.classifier.weight).all() and not torch.equal(before,model.classifier.weight)
-    print(json.dumps({'main_hidden_size':1024,'frames':128,'peak_vram_mib':torch.cuda.max_memory_allocated()/1024**2,'loss':loss.item()}))
+    import psutil
+    print(json.dumps({'main_hidden_size':1024,'frames':frames,'peak_vram_mib':torch.cuda.max_memory_allocated()/1024**2,
+                      'rss_mib':psutil.Process().memory_info().rss/1024**2,
+                      'peak_rss_mib':getattr(psutil.Process().memory_info(),'peak_wset',psutil.Process().memory_info().rss)/1024**2,
+                      'vocab_size':len(vocab),'loss':loss.item()}))
     del loss,optimizer,model,video
     gc.collect(); torch.cuda.empty_cache()
 

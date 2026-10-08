@@ -1,4 +1,4 @@
 {
   "training_change": "new_campaign",
-  "explanation": "Reviewed v11 memory fix: save CUDA training activations on CPU without changing frames, labels, architecture, loss or batch. Code fingerprint changed, so start a separate campaign and preserve previous runs/checkpoints; do not bypass resume guards."
+  "explanation": "Reviewed v12 memory policy: checkpoint feature blocks, save boundary inputs on CPU, and avoid loader prefetch without changing frames, labels, architecture, loss or effective batch. Code fingerprint changed, so start a separate campaign and preserve previous runs/checkpoints; do not bypass resume guards. Host resource caps remain in force."
 }

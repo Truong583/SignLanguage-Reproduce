@@ -1,6 +1,6 @@
 # Sửa trên laptop, huấn luyện trên máy Linux của cô
 
-**Cập nhật 08/10/2026:** người dùng đã chuyển repository sang **Public**. Máy cô tải/cập nhật mã mà không cần đăng nhập hoặc token GitHub. `setup_machine.py` tự nhận diện chế độ này; chỉ hỏi W&B key. W&B project vẫn phải riêng tư. Các hướng dẫn token GitHub bên dưới chỉ áp dụng nếu sau này đổi repository lại Private. Không đưa `.updates`, key, dữ liệu hay checkpoint lên repo Public.
+**Cập nhật 09/10/2026:** người dùng đã chuyển repository sang **Public**. Máy cô tải/cập nhật mã mà không cần đăng nhập hoặc token GitHub. `setup_machine.py` tự nhận diện chế độ này; chỉ hỏi W&B key. W&B project vẫn phải riêng tư. Các hướng dẫn token GitHub bên dưới chỉ áp dụng nếu sau này đổi repository lại Private. Không đưa `.updates`, key, dữ liệu hay checkpoint lên repo Public.
 
 Không có CI/GitHub Actions. Máy cô không cần SSH hay mở cổng vào. Chỉ cần Internet ra ngoài, Python 3.12+, Git, Docker và NVIDIA Container Toolkit đã được chủ máy cài sẵn. Script không tự cài driver, đổi hệ thống hoặc xóa công việc khác.
 
@@ -8,7 +8,7 @@ Luồng sử dụng:
 
 ```mermaid
 flowchart LR
-  A[Laptop: sửa code] --> B[GitHub Private]
+  A[Laptop: sửa code] --> B[GitHub: mã nguồn Public]
   B --> C[Máy cô: lấy bản mới khi đã dừng]
   C --> D[Docker: train và đánh giá]
   D --> E[W&B riêng tư: trạng thái và lỗi]
@@ -17,7 +17,7 @@ flowchart LR
 
 ## 1. Chuẩn bị một lần
 
-**Trên laptop:** code đã nằm ở repository `https://github.com/Truong583/SignLanguage-Reproduce`. Giữ repository **Private**. Sau này sửa code cùng trợ lý tại thư mục dự án, rồi chạy:
+**Trên laptop:** code đã nằm ở repository Public `https://github.com/Truong583/SignLanguage-Reproduce`. Sau này sửa code cùng trợ lý tại thư mục dự án, rồi chạy:
 
 ```powershell
 python publish.py
@@ -27,7 +27,7 @@ Lệnh này dùng đăng nhập GitHub hiện có của Git trên laptop. Nó ch
 
 **Tạo W&B:** đăng ký/đăng nhập `https://wandb.ai`, tạo project tên `signlanguage-reproduction`, chọn **Private** (hoặc Team/Restricted nếu dùng team). Ghi lại tên tài khoản/team và lấy API key trong User Settings. Nên dùng tài khoản nghiên cứu riêng. Hệ thống kiểm tra project đã tồn tại và không công khai trước khi gửi log; không tự tạo project công khai. Cấu hình phạm vi xem ở [tài liệu W&B](https://docs.wandb.ai/guides/hosting/iam/access-management/restricted-projects/).
 
-**Tạo quyền GitHub cho máy cô:** vào GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Repository access: **Only select repositories**, chọn **SignLanguage-Reproduce**. Repository permissions: **Contents: Read-only**; Metadata đọc theo mặc định. Chọn thời hạn phù hợp với thời gian train. Token không cần quyền ghi, Actions hoặc quyền toàn tài khoản. Đến hạn phải thay token trên máy cô. Không gửi token qua chat hoặc đưa vào file code.
+**Chỉ cần nếu sau này đổi GitHub sang Private:** vào GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token. Repository access: **Only select repositories**, chọn **SignLanguage-Reproduce**. Repository permissions: **Contents: Read-only**; Metadata đọc theo mặc định. Chọn thời hạn phù hợp với thời gian train. Token không cần quyền ghi, Actions hoặc quyền toàn tài khoản. Đến hạn phải thay token trên máy cô. Không gửi token qua chat hoặc đưa vào file code. Repository Public hiện tại không cần bước này.
 
 **Trên máy cô:** đưa thư mục dự án mới sang một lần bằng ZIP/USB/Drive, giải nén vào ổ có dung lượng đủ. Mở terminal trong thư mục `SignLanguage-Reproduce`, chạy:
 
@@ -37,17 +37,17 @@ python3 setup_machine.py
 
 Nhập tên tài khoản/team W&B và API key W&B khi được hỏi. Chỉ repo Private mới hỏi token GitHub. Secret được nhập ẩn, lưu tại `.updates/` với quyền chỉ tài khoản Linux của bạn đọc/ghi. Không cần quyền Google Drive của cá nhân trên máy cô. Helper kiểm tra W&B riêng tư; lỗi ở bước này thì chưa bắt đầu train. Với project hiện tại dùng `python3 setup_machine.py --entity truong583-research`.
 
-Nếu archive PHOENIX đã có trên Drive: tải một lần xuống máy cô và đặt ở **`data/phoenix-2014-T.v3.tar.gz`**. Không giải nén bằng tay. Nếu chưa có, chương trình tự tải bản chính thức RWTH. Dữ liệu giải nén, manifests và weights được giữ local để các lượt sau không tải lại. Cần ít nhất 150 GiB trống cho chuẩn bị; còn phải chừa dung lượng Docker và checkpoint của 68 lượt. Đừng bắt đầu nếu ổ không đủ cho toàn chiến dịch.
+Máy cô hiện đã tải và giải nén đủ PHOENIX14T; bản cập nhật dùng lại dữ liệu đó. Với máy mới, nếu archive PHOENIX đã có trên Drive thì tải một lần xuống máy và đặt ở **`data/phoenix-2014-T.v3.tar.gz`**. Không giải nén bằng tay. Nếu chưa có, chương trình tự tải bản chính thức RWTH. Dữ liệu giải nén, manifests và weights được giữ local để các lượt sau không tải lại. Chuẩn bị từ đầu cần ít nhất 150 GiB trống; còn phải chừa dung lượng Docker và checkpoint của số lượt đã chọn. Chế độ service `--single` chỉ chạy thí nghiệm chính, không phải 68 lượt.
 
 Nếu RWTH timeout, downloader giữ `.part` và tự thử lại có giới hạn8 lần. Lần tiếp theo tiếp tục byte đã ghi khi server hỗ trợ HTTP Range; nếu server bỏ qua Range thì phải tải lại archive. Không xóa `.part` để sửa lỗi mạng. Guard chuẩn bị có tính archive đã lưu, còn guard giải nén vẫn kiểm tra dung lượng trống thật. Nếu đã hết retry, supervisor chờ bản sửa hoặc cập nhật thủ công; không tự train lại cùng bản lỗi vô hạn.
 
 ## 2. Lệnh chạy hàng ngày trên máy cô
 
 ```bash
-python3 run.py
+python3 run.py --single
 ```
 
-Chạy ở **máy Linux của cô**, không chạy trên laptop để train. Mặc định chương trình chạy 68 cấu hình tái dựng PHOENIX14T–CSLR, theo catalog chung với hai notebook. Tham số paper/nguồn, các phần tác giả thiếu và giả định nằm ở [PHOENIX14T_SUITE.md](PHOENIX14T_SUITE.md) và [AUDIT.md](AUDIT.md). Batch hiệu dụng được giữ khi số GPU thay đổi; không tự giảm epoch, đổi LR hoặc kiến trúc để né lỗi.
+Lệnh này chạy **thí nghiệm chính PHOENIX14T–CSLR trên máy Linux của cô**. Service đã cài cũng dùng chế độ `--single`; nếu service đang hoạt động thì không cần nhập lại lệnh hoặc mở một lượt thứ hai. Chỉ dùng `python3 run.py` không có `--single` hoặc service `--suite` khi chủ động chọn đủ 68 lượt theo catalog chung với hai notebook. Tham số paper/nguồn, các phần tác giả thiếu và giả định nằm ở [PHOENIX14T_SUITE.md](PHOENIX14T_SUITE.md) và [AUDIT.md](AUDIT.md). Batch hiệu dụng được giữ khi số GPU thay đổi; không tự giảm epoch, đổi LR hoặc kiến trúc để né lỗi.
 
 Đây là tiến trình giám sát chạy liên tục: hoàn tất/lỗi thì **chờ**, không kết thúc như runner một lần. Mỗi 5 phút nó kiểm tra GitHub khi đã dừng huấn luyện. Trong lúc train, nó không đổi mã nguồn. Mỗi phiên dùng một bản code riêng có checksum. `python3 run.py --once` là chế độ một lượt không giám sát/cập nhật từ xa, dùng khi chưa cấu hình W&B.
 
@@ -55,7 +55,7 @@ Chạy ở **máy Linux của cô**, không chạy trên laptop để train. M�
 
 Xem log ở nhà: mở project W&B trên laptop, chọn observer mới nhất → Files/live_log_tail.txt; lỗi có Artifacts/runtime-error/log_tail.txt và diagnostic.json. `python3 service.py logs` chỉ là cách xem journal trực tiếp tại máy cô, không bắt buộc cho giám sát từ xa. Lấy file lỗi từ W&B, sửa tại laptop, rồi `python publish.py`. Supervisor trên máy cô kiểm tra GitHub mỗi5 phút lúc rảnh; bản sửa tương thích tiếp tục checkpoint, bản sửa numerical chỉ được kích hoạt với quyết định campaign mới. Chế độ single cũng có thư mục campaign mới riêng, không xóa hoặc ghép checkpoint cũ. Mất mạng sẽ làm trễ gửi log/cập nhật; không có SSH hoặc đổi code giữa lúc trainer đang chạy.
 
-Nếu lỗi ở Docker build trước khi W&B container khởi động, diagnostic chỉ lưu local tại `runs/diagnostics`; chưa thể gửi lên W&B. Supervisor giữ log và chờ commit sửa, không dựng lại cùng revision mãi. Khi cập nhật thủ công từ laptop: dừng supervisor, `git pull --ff-only`, rồi `python3 update.py --automatic` để kích hoạt bản mới; chỉ pull không thay bản đang ghim trong `.updates/active.json`. Khi cập nhật thành công, chạy lại lệnh train đã chọn (ví dụ `python3 run.py --single`).
+Nếu lỗi ở Docker build trước khi W&B container khởi động, diagnostic chỉ lưu local tại `runs/diagnostics`; chưa thể gửi lên W&B. Supervisor giữ log và chờ commit sửa, không dựng lại cùng revision mãi. Supervisor đang hoạt động sẽ tự cập nhật sau khi laptop publish; không cần đi tới máy cô cho mỗi bản sửa. Chỉ khi phải khôi phục thủ công, thực hiện tại máy cô: dừng service/supervisor, `git pull --ff-only`, rồi `python3 update.py --automatic` để kích hoạt bản mới; chỉ pull không thay bản đang ghim trong `.updates/active.json`. Sau đó khởi động lại service đã cài. Không chạy `run.py` song song với service.
 
 1. Trong W&B, mở project của bạn. Run loại `observer` chứa trạng thái, loss/WER theo epoch, `live_log_tail.txt` và artifact loại `runtime-error` gồm `diagnostic.json`, `log_tail.txt`. Bật nhận W&B alerts nếu muốn có thông báo. Có Internet thì log thường xuất hiện sau khoảng 30 giây cộng thời gian đồng bộ; mạng lỗi có thể chậm hơn.
 2. Bạn tải hai file lỗi từ W&B rồi gửi trợ lý ở laptop; không cần vào máy cô lấy log. Trợ lý không tự nhận được dữ liệu W&B nếu chưa được bạn cung cấp/quyền kết nối.
@@ -71,7 +71,7 @@ Container giám sát dùng CPU, không có GPU, không được mount dữ liệ
 - Sửa mô hình, loss, optimizer hoặc recipe: không được tự bỏ kiểm tra checkpoint để nối hai thí nghiệm khác nhau. Máy cô sẽ chờ. Nếu cần chạy lại đúng bản sửa, trên laptop đổi `DEPLOYMENT_POLICY.json` từ `"training_change": "pause"` sang **`"training_change": "new_campaign"`**, rồi `python publish.py`. Máy cô tạo thư mục chiến dịch mới theo commit; dữ liệu/weights dùng lại, kết quả cũ giữ nguyên.
 - Đổi code dựng config ở runner mà không đổi `repro/` vẫn có thể bị trainer từ chối nếu identity khác. Khi đó phải xem log và tạo chiến dịch mới có tên riêng; không vô hiệu hóa identity.
 
-Tiếp tục nghĩa là từ checkpoint đã lưu, phần chưa lưu phải chạy lại. Tắt nguồn đột ngột không bảo đảm file đang ghi còn nguyên; cơ chế checksum và thế hệ checkpoint dùng để phục hồi bản đã commit. Không hứa hẹn kết quả khớp từng bit khi đổi GPU/môi trường.
+Tiếp tục nghĩa là từ checkpoint đã lưu, phần chưa lưu phải chạy lại. Từ v12, chế độ local `--single` mặc định lưu mỗi 50 optimizer updates, tương ứng 300 micro-step với cấu hình 1 GPU/micro-batch 1/accumulation 6 của máy cô; notebook/suite vẫn giữ 200 updates vì chi phí upload Drive. Tắt nguồn đột ngột không bảo đảm file đang ghi còn nguyên; cơ chế checksum và thế hệ checkpoint dùng để phục hồi bản đã commit. Không hứa hẹn kết quả khớp từng bit khi đổi GPU/môi trường.
 
 ## 5. Đóng terminal mà máy vẫn chạy
 
@@ -85,8 +85,8 @@ Sudo chỉ dùng để cài/bật service có tên riêng theo workspace; traini
 
 ## 6. Hai notebook
 
-Colab/Kaggle tiếp tục chạy **Run all** từ ZIP trong cùng thư mục Drive, lưu checkpoint/kết quả lên Drive. Chúng dùng chung catalog 68 cấu hình; không chạy supervisor/service Linux và không yêu cầu thêm W&B token. Sau khi cập nhật project local, tạo ZIP mới và thay đúng một file `SignLanguage-Reproduce-portable.zip` trong Drive. Notebook hiện tại không tự kéo repository Private của bạn. Không chạy cùng lúc hai nền tảng vào cùng một thư mục chiến dịch.
+Colab/Kaggle tiếp tục chạy **Run all** từ ZIP trong cùng thư mục Drive, lưu checkpoint/kết quả lên Drive. Chúng dùng chung catalog 68 cấu hình; không chạy supervisor/service Linux và không yêu cầu thêm W&B token. Sau khi cập nhật project local, tạo ZIP mới và thay đúng một file `SignLanguage-Reproduce-portable.zip` trong Drive. Notebook hiện tại không tự lấy bản GitHub; ZIP trên Drive là nguồn code của notebook. V12 mặc định `WORKERS=0` và campaign mới để giảm RAM và giữ riêng checkpoint cũ. Không chạy cùng lúc hai nền tảng vào cùng một thư mục chiến dịch.
 
 ## Giới hạn đã biết
 
-Không có CI; chỉ kiểm tra nhanh trước kích hoạt và kiểm tra runtime khi chạy. Phần tự nhận diện lỗi chỉ dựa vào log/exit code, không chứng minh mô hình đúng về khoa học. Log máy cô xác nhận Docker/GPU RTX 3060, dịch vụ systemd, tự lấy bản v10 từ GitHub, W&B, dữ liệu PHOENIX14T đã giải nén và train thật hơn 361 micro-step trước lỗi VRAM. Chưa có epoch/đánh giá hoàn tất; chưa nghiệm thu nhiều GPU/NCCL hoặc khởi động lại sau mất điện. V11 chuyển activation sang RAM và tự tạo campaign mới để giữ checkpoint cũ. Chỉ báo cáo đã tái lập khi có số đo dev/test thật và đối chiếu paper; các phần tác giả chưa cung cấp phải được nêu rõ trong báo cáo.
+Không có CI; chỉ kiểm tra nhanh trước kích hoạt và kiểm tra runtime khi chạy. Phần tự nhận diện lỗi dựa vào log/exit code và bằng chứng cgroup/Docker khi có, không chứng minh mô hình đúng về khoa học. Log máy cô xác nhận Docker/GPU RTX 3060, dịch vụ systemd, tự lấy bản v10/v11 từ GitHub, W&B, dữ liệu PHOENIX14T đã giải nén và train thật tới micro-step 361 trước lỗi. V10 thiếu VRAM; v11 nhận SIGKILL sau khi chuyển activation sang RAM. Chưa có bằng chứng xác nhận nguyên nhân SIGKILL, chưa có epoch/đánh giá hoàn tất; chưa nghiệm thu nhiều GPU/NCCL hoặc khởi động lại sau mất điện. V12 tính lại activation theo khối, chỉ lưu đầu vào ranh giới khối trên CPU và giảm loader xuống 0 worker; giữ giới hạn Docker hiện tại, không tăng RAM/CPU của máy cô để né lỗi. Fingerprint code thay đổi nên tự tạo campaign mới, giữ toàn bộ dữ liệu/checkpoint cũ. Cần xác nhận lần chạy thật với v12; kiểm thử và giới hạn được ghi tại `reports/VALIDATION.md`. Chỉ báo cáo đã tái lập khi có số đo dev/test thật và đối chiếu paper; các phần tác giả chưa cung cấp phải được nêu rõ trong báo cáo.

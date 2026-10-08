@@ -9,6 +9,25 @@ import numpy as np
 import torch
 
 
+def loader_options(cfg, use_cuda):
+    """Bound host-side clip buffering when backward tensors also use host RAM.
+
+    Dataset augmentation uses a per-sample RNG, so reducing worker concurrency
+    does not change sampled frames, ordering, labels, or effective batch size.
+    """
+    requested = cfg.get('workers', 2)
+    if not isinstance(requested, int) or isinstance(requested, bool) or requested < 0:
+        raise ValueError('workers must be a nonnegative integer')
+    memory_safe = cfg.get('low_memory_loader', True) and cfg.get('activation_offload', 'cpu_checkpoint') != 'none'
+    workers = 0 if memory_safe else requested
+    options = {'num_workers': workers, 'pin_memory': bool(use_cuda and not memory_safe),
+               'persistent_workers': False}
+    if workers:
+        # One queued batch per worker; PyTorch's default would queue two.
+        options['prefetch_factor'] = 1
+    return options
+
+
 def batch_plan(available, global_batch=6, micro_batch=1, requested=None):
     if global_batch<1 or micro_batch<1 or global_batch % micro_batch:
         raise ValueError('global_batch must be a positive multiple of micro_batch')

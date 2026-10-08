@@ -99,7 +99,7 @@ def test_single_runner_restores_previous_generation_after_corrupt_latest(tmp_pat
     monkeypatch.setattr(module,'call',lambda *args:calls.append(args))
     module.train(cfg,Path('experiment.yaml'))
     assert checkpoint.read_bytes()==b'older valid state'
-    assert cfg['checkpoint_every_updates']==200 and cfg['global_batch']==6 and cfg['epochs']==50
+    assert cfg['checkpoint_every_updates']==50 and cfg['global_batch']==6 and cfg['epochs']==50
     assert '--resume' in calls[1]
     cfg['lr']=0.02
     with pytest.raises(ValueError,match='different config'): module.train(cfg,Path('experiment.yaml'))

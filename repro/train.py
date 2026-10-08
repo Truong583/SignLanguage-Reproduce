@@ -16,7 +16,7 @@ import yaml
 from .data import SignDataset, collate, read_manifest, build_vocab
 from .model import SignModel
 from .metrics import ctc_decode, corpus_wer, translation_scores
-from .runtime import batch_plan, seed_everything, rng_state, restore_rng, atomic_save, sha256, environment, write_json
+from .runtime import batch_plan, seed_everything, rng_state, restore_rng, atomic_save, sha256, environment, write_json, loader_options
 from .persistence import make_store, publish
 
 
@@ -42,8 +42,8 @@ def evaluate(model,cfg,vocab,split,device,rank,world,amp):
     dataset = SignDataset(cfg[split],cfg['data_root'],input_kind=cfg.get('input_kind','rgb'))
     # No duplicate padding examples and no DDP forward/buffer collectives in eval.
     subset = Subset(dataset,list(range(rank,len(dataset),world)))
-    loader = DataLoader(subset,batch_size=cfg.get('eval_batch',1),num_workers=cfg.get('workers',2),
-                        collate_fn=collate,pin_memory=device.type=='cuda')
+    loader = DataLoader(subset,batch_size=cfg.get('eval_batch',1),
+                        collate_fn=collate,**loader_options(cfg,device.type=='cuda'))
     model.eval()
     predictions=[]
     with torch.no_grad():
@@ -182,6 +182,7 @@ def main():
         write_json(output/'vocab.json',vocab)
         print(json.dumps(plan),flush=True)
         print('Activation storage: '+(raw.activation_offload if use_cuda else 'none (CPU execution)'),flush=True)
+        print('Data loader: '+json.dumps(loader_options(cfg,use_cuda)),flush=True)
     dataset=SignDataset(cfg['train'],cfg['data_root'],train=True,seed=seed,input_kind=cfg.get('input_kind','rgb'),target_field=cfg.get('target_field','gloss'))
     accumulation=plan['accumulation']
     store=make_store(cfg.get('persistence')) if rank==0 else None
@@ -215,7 +216,7 @@ def main():
         updates=checkpoint.get('optimizer_steps_in_epoch',0) if args.resume and epoch==start and not checkpoint.get('epoch_complete',True) else 0
         sampler=GlobalBatchSampler(len(dataset),plan['global_batch'],rank,world,seed,epoch,updates)
         loader=DataLoader(dataset,batch_size=plan['micro_batch'],sampler=sampler,collate_fn=collate,
-                          num_workers=cfg.get('workers',2),pin_memory=use_cuda,
+                          **loader_options(cfg,use_cuda),
                           generator=torch.Generator().manual_seed(seed+epoch))
         model.train()
         optimizer.zero_grad(set_to_none=True)
@@ -223,6 +224,10 @@ def main():
         if store is not None or (world>1 and cfg.get('persistence')):
             save_progress(epoch,updates,False)
         for step,batch in enumerate(loader):
+            if rank==0 and (step%20==0 or int(batch['lengths'].max())>=512):
+                print('TRAIN_SAMPLE: '+json.dumps({'epoch':epoch+1,'micro_step':step+1,
+                      'ids':[row['id'] for row in batch['rows']],
+                      'video_shape':list(batch['video'].shape)}),flush=True)
             sync=(step+1)%accumulation==0
             with model.no_sync() if world>1 and not sync else nullcontext():
                 try:

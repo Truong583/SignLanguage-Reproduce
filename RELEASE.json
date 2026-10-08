@@ -1,8 +1,8 @@
 {
-  "version": "phoenix14t-cslr-cpu-activation-storage-v11",
+  "version": "phoenix14t-cslr-bounded-activation-checkpoint-v12",
   "experiments": 68,
   "quantitative_configurations": 67,
   "qualitative_reference_configurations": 1,
   "extractor": "tar-data-filter-internal-links-and-correct-release-root",
-  "status": "tested reconstruction; paper metrics not yet reproduced"
+  "status": "reconstruction; paper metrics not yet reproduced"
 }

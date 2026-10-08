@@ -20,6 +20,7 @@ model_urls = {
 
 from .torch_vertex import Grapher, act_layer
 from repro.graphs import TemporalGraph, HierarchicalGraph
+from repro.activation_checkpoint import checkpoint_call
 # from gcn_lib.torch_vertex import Grapher, act_layer
 # from gcn_lib.temgraph import TemporalGraph
 
@@ -67,6 +68,21 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(nn.Module):
+
+    def _call(self, function, *args, modules=None):
+        return checkpoint_call(function, *args,
+            modules=function if modules is None else modules,
+            enabled=getattr(self,'activation_checkpoint',False))
+
+    def _stage(self, stage, x):
+        for block in stage:
+            x=self._call(block,x)
+        return x
+
+    def _stem_bounded(self,x):
+        x=self._call(self.conv1,x)
+        x=self._call(lambda value:self.relu(self.bn1(value)),x,modules=(self.bn1,self.relu))
+        return self._call(self.maxpool,x)
 
     def __init__(self, block, layers, num_classes=1000, hsg=True, graph_order='tsg-lsg', graph_conv='edge'):
         self.inplanes = 64
@@ -123,38 +139,35 @@ class ResNet(nn.Module):
 
     def forward(self, x):
         N, C, T, H, W = x.size()
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)  # torch.Size([1, 64, 100, 56, 56])
-        x = self.layer1(x)  # ([1, 64, 100, 56, 56])
-        x = self.layer2(x)  # ize([1, 128, 100, 28, 28])
+        x = self._stem_bounded(x)
+        x = self._stage(self.layer1,x)
+        x = self._stage(self.layer2,x)
         high1 = rearrange(x, "N C T H W -> (N T) C H W")
-        x = self.layer3(x)  # e([1, 256, 100, 14, 14])
+        x = self._stage(self.layer3,x)
         #
         N, C, T, H, W = x.size()
         x = rearrange(x, 'N C T H W -> (N T) C H W')  # [78, 256, 14, 14])
         if self.graph_order == 'tsg-lsg':
-            x = x + self.temporalG(x, N) * self.alpha[1]
-            x = x + self.localG(x) * self.alpha[0]
+            x = x + self._call(self.temporalG,x,N) * self.alpha[1]
+            x = x + self._call(self.localG,x) * self.alpha[0]
         else:
-            x = x + self.localG(x) * self.alpha[0]
-            x = x + self.temporalG(x, N) * self.alpha[1]
-        if self.hsg: x = self.hsg1(high1, x)
+            x = x + self._call(self.localG,x) * self.alpha[0]
+            x = x + self._call(self.temporalG,x,N) * self.alpha[1]
+        if self.hsg: x = self._call(self.hsg1,high1,x)
         high2 = x
         x = x.view(N, T, C, H, W).permute(0, 2, 1, 3, 4)
 
-        x = self.layer4(x)  # [1, 512, 100, 7, 7])
+        x = self._stage(self.layer4,x)
 
         N, C, T, H, W = x.size()
         x = rearrange(x, 'N C T H W -> (N T) C H W')  # [78, 256, 14, 14])
         if self.graph_order == 'tsg-lsg':
-            x = x + self.temporalG2(x, N) * self.alpha[3]
-            x = x + self.localG2(x) * self.alpha[2]
+            x = x + self._call(self.temporalG2,x,N) * self.alpha[3]
+            x = x + self._call(self.localG2,x) * self.alpha[2]
         else:
-            x = x + self.localG2(x) * self.alpha[2]
-            x = x + self.temporalG2(x, N) * self.alpha[3]
-        if self.hsg: x = self.hsg2(high2, x)
+            x = x + self._call(self.localG2,x) * self.alpha[2]
+            x = x + self._call(self.temporalG2,x,N) * self.alpha[3]
+        if self.hsg: x = self._call(self.hsg2,high2,x)
         x = x.view(N, T, C, H, W).permute(0, 2, 1, 3, 4)
 
         x = x.transpose(1, 2).contiguous()  # debug5= torch.Size([1, 100, 512, 7, 7])

@@ -30,9 +30,9 @@ class SignModel(nn.Module):
     def __init__(self, cfg, vocab, initialize=True):
         super().__init__()
         self.cfg, self.vocab = cfg, vocab
-        self.activation_offload=cfg.get('activation_offload','cpu')
-        if self.activation_offload not in ('none','cpu'):
-            raise ValueError('activation_offload must be none or cpu')
+        self.activation_offload=cfg.get('activation_offload','cpu_checkpoint')
+        if self.activation_offload not in ('none','cpu','cpu_checkpoint'):
+            raise ValueError('activation_offload must be none, cpu or cpu_checkpoint')
         self.input_kind = cfg.get('input_kind','rgb')
         hidden = cfg.get('hidden_size',1024)
         if self.input_kind == 'rgb':
@@ -88,9 +88,16 @@ class SignModel(nn.Module):
                 self.translation.config.use_cache=False
 
     def features(self, video, lengths):
-        # Exact tensor copies, no resampling or forward recomputation (BatchNorm
-        # statistics and dropout are computed once). Trade host RAM for VRAM.
-        if self.activation_offload=='cpu' and video.is_cuda and self.training and torch.is_grad_enabled():
+        # Save only checkpoint boundaries on CPU in the bounded mode. Segment
+        # recomputation preserves RNG and isolates BatchNorm running buffers.
+        active=video.is_cuda and self.training and torch.is_grad_enabled()
+        if self.backbone is not None:
+            self.backbone.activation_checkpoint=active and self.activation_offload=='cpu_checkpoint'
+            from .graphs import EdgeConv
+            for module in self.backbone.modules():
+                if isinstance(module,EdgeConv):
+                    module.activation_checkpoint=active and self.activation_offload=='cpu_checkpoint'
+        if self.activation_offload in ('cpu','cpu_checkpoint') and active:
             with torch.autograd.graph.save_on_cpu(pin_memory=False):
                 return self._features(video,lengths)
         return self._features(video,lengths)

@@ -26,6 +26,12 @@ def main():
     command=[sys.executable,'-m','torch.distributed.run','--standalone','--nnodes=1',
              f'--nproc_per_node={plan["world_size"]}','-m','repro.train','--config',a.config,
              '--micro-batch',str(plan['micro_batch']),*rest]
-    raise SystemExit(subprocess.call(command,cwd=ROOT))
+    from scripts.resource_diagnostics import memory_snapshot, exit_evidence
+    before=memory_snapshot()
+    print('Container memory: '+json.dumps(before),flush=True)
+    result=subprocess.call(command,cwd=ROOT)
+    if result:
+        print('RESOURCE_EXIT: '+json.dumps(exit_evidence(result,before,memory_snapshot())),flush=True)
+    raise SystemExit(result)
 
 if __name__=='__main__': main()

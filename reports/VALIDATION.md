@@ -141,3 +141,24 @@ The observer now handles SIGTERM and calls the SDK finish method in finally. The
 
 After adding OOM sample details, three focused checks passed (actual tiny CPU checkpoint recovery/resume, CPU model training and observer shutdown), and modified modules compiled. Both notebook code-cell sets compiled after assigning a fresh v11 campaign default; their cloud runtimes were not executed locally.
 
+
+
+## Bounded activation checkpointing (v12, 2026-10-09)
+
+Teacher evidence: v11 completed preprocessing and trained through the logged micro-step 361, then torchrun reported worker SIGKILL / exit -9. This alone does not prove OOM. The 21 GiB Docker cap and the previous all-activation CPU policy make host-memory exhaustion plausible. v12 logs cgroup before/after failure and classifies a kernel OOM kill only when its counter increases.
+
+Final implementation:
+- Non-reentrant checkpointing of the stem, individual residual blocks and graph blocks; checkpoint boundary tensors on CPU. Recompute clones/restores BatchNorm buffers and preserves RNG. The cuDNN LSTM stays outside recomputation; production dropout remains 0.3.
+- EdgeConv processes at most 16 independent graphs per group in ALL storage modes and train/eval. Nodes, edges, graph K and within-video temporal connections stay intact. This grouping is mathematically equivalent, but CUDA rounding can differ from the old large batched Linear: no claim of bitwise v11 equivalence. No BatchNorm operation is split across frame groups.
+- Zero background loader workers/pinned batches by default, same deterministic per-sample augmentation, in-place FP32 normalization with equality tests. Keep host Docker RAM/CPU caps, no disk activation offload.
+- Main local run checkpoints every 50 optimizer updates (300 micro-steps at 1 GPU/micro-batch 1/accumulation 6); notebook/suite cadence stays 200. New campaign preserves old checkpoint/data and respects code fingerprints.
+
+Validation on Windows / PyTorch 2.10 / RTX 3050 Laptop 6 GB:
+- Initial broad candidate run: 185 passed, 2 failed. Splitting graphs only in the checkpoint mode changed GEMM shapes versus the reference, with a measurable gradient difference. Rejected that inconsistent policy. A full-size per-segment CPU replay alternative also increased memory: a 768-frame attempt was deliberately stopped when laptop free RAM became low; a 512-frame trial peaked at 7,328 MiB CUDA allocations and 9,521 MiB process working set. That alternative is NOT shipped.
+- Final policy: 35 targeted tests passed (68 previously exercised two-frame CPU suite tests deselected), including FP32/FP16 real RGB CTC storage-mode comparisons, all four CUDA graph-convolution variants, CPU checkpoint/BN/RNG tests, doctor/data checks and suite checkpoint handling.
+- Independent float64 EdgeConv grouping proof: 37 graphs, non-multiple-of-16 tail, outputs, input gradients and parameter gradients agree with ungrouped math at rtol/atol 1e-12, with and without recomputation.
+- Final 768-frame synthetic RGB 224x224 main model, hidden size 1024, 1,296-token output, FP16, two CTC losses, KD weight 25, Adam: finite forward/backward and actual parameter update; all BatchNorm counters updated once. CUDA max allocated 5,482.28 MiB (5.35 GiB); process peak working set 8,945.26 MiB (8.74 GiB); test 22.34 seconds. These are synthetic single-step measurements, not teacher/Linux cgroup measurements or a full epoch.
+- Resource/runtime tests: cgroup v1/v2 fixtures, SIGKILL versus confirmed OOM, equal RGB loader outputs/order/RNG with workers 0 versus 1, bitwise normalization, checkpoint recovery and supervised deployment. The focused runtime batch passed 33 tests; resource-specific follow-up passed 12 tests including the wrapped SIGKILL case.
+- All Python sources compile; notebook source cells compile; vendor adaptation hash refreshed without modifying upstream files. No CI added.
+
+Limits: teacher uses Docker PyTorch 2.5.1; checkpoint API availability checked against its official source. Actual teacher v12 receipt, long real clips, a complete epoch, dev/test WER, multi-GPU execution, abrupt shutdown and every full-length ablation remain unverified. Resource use depends on input length and other processes; do not infer an absolute hardware-safety or error-free guarantee from these tests. The implementation remains an audited reconstruction because author assets/recipe are incomplete.

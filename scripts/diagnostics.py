@@ -28,6 +28,7 @@ def redact(text):
 def classify(text,exit_code):
     if exit_code in (130,75): return {'category':'interrupted','confidence':'high','next_step':'Rerun the same command to restore the saved checkpoint.'}
     patterns=[
+      ('host_memory_oom',r'"oom_kill_confirmed_in_cgroup"\s*:\s*true','The kernel reports an OOM kill in the container. Reduce activation/loader host-memory use while retaining the host RAM limit and the paper recipe.'),
       ('download_connection',r'TimeoutError: The read operation timed out|Download interrupted|URLError.*timed out','Retain the archive .part and resume after network/server recovery; this is not a training failure.'),
       ('package_platform',r'is not supported on this platform','Reinstall a compatible wheel inside the Docker image; retain pip check.'),
       ('cuda_oom',r'CUDA out of memory|OutOfMemoryError','Use more VRAM; do not silently change the paper recipe.'),
@@ -39,6 +40,7 @@ def classify(text,exit_code):
       ('gpu_setup',r'cannot access CUDA|requires CUDA|no NVIDIA driver|not compiled with CUDA|no kernel image','Inspect GPU access and the pinned Docker/CUDA environment.'),
       ('checkpoint_incompatible',r'Checkpoint/config mismatch|Resume config changed|different code/config/data|checkpoint identity differs|Manifest hashes differ','Use matching code/config/data or start a separate campaign.'),
       ('data_missing',r'FileNotFoundError|No images|No frames|Missing frames directory','Inspect dataset extraction and the exact missing path.'),
+      ('process_killed',r'Signal 9 \(SIGKILL\)|exitcode\s*:\s*-9\b','The child received SIGKILL; inspect cgroup memory evidence to distinguish an OOM kill from an external stop.'),
     ]
     for category,pattern,next_step in patterns:
         if re.search(pattern,text,re.I):

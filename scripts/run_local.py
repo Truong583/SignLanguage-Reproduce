@@ -83,7 +83,7 @@ def train(cfg, config_path):
         raise ValueError("Experiment output must be inside runs/.")
     output.mkdir(parents=True, exist_ok=True)
     cfg["code_sha256"] = code_hash()
-    cfg.setdefault('checkpoint_every_updates',200)
+    cfg.setdefault('checkpoint_every_updates',50)
     cfg.setdefault('persistence',{'backend':'local','root':str(output.parent/'.checkpoint-store'),'run_id':output.name})
     saved_config = output / "local_config.yaml"
     if saved_config.is_file():

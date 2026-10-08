@@ -27,7 +27,7 @@
   "backbone.py": {
     "source": "MixSignGraph/modules/resnet.py",
     "upstream_sha256": "ce05e63e6b9392950c0776f2b34a4071abe0e343afc6f3f431769c70da1ea55d",
-    "adapted_sha256": "d6c1927f3c3418bf615c8cede4a3b6993e352da581a2921bae6c924bd625ae2f"
+    "adapted_sha256": "d85c84dd5d2a4d115a0056d57dece1159266952e581bf8afd6ee650b6ab344e4"
   },
   "tconv.py": {
     "source": "MixSignGraph/modules/tconv.py",

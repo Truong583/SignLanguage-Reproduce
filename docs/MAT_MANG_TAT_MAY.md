@@ -56,11 +56,15 @@ Bản v10 sửa kiểm tra RGB train theo chính sách temporal resampling đã 
 
 Nếu service đang hoạt động và pipeline vừa dừng do lỗi này, không chạy thêm `run.py` hay tải lại dữ liệu. Sau khi bản sửa được publish, supervisor sẽ lấy bản mới khi kiểm tra GitHub, thường khoảng 5 phút một lần trong thời gian chờ. Log lượt mới phải có `PHOENIX14T already prepared` và báo cáo doctor trước khi train. Cần mạng để lấy bản sửa; `active (running)` của service chỉ chứng minh supervisor đang chạy, không chứng minh huấn luyện đã thành công.
 
-## CUDA out of memory sau khi bắt đầu train
+## Khi train báo CUDA OOM hoặc bị dừng bởi signal 9
 
-V11 chuyển các tensor trung gian cần cho backward trong bước trích xuất đặc trưng sang RAM bằng PyTorch save_on_cpu. Không thay batch, độ phân giải, nhãn, frame, dropout hoặc graph K. Tốn thêm RAM và truyền dữ liệu CPU↔GPU; tốc độ có thể giảm. Không đảm bảo mọi clip đều vừa VRAM/RAM trên mọi máy.
+V10 gặp thiếu VRAM. V11 chuyển tensor trung gian sang RAM; log máy cô sau đó ghi SIGKILL (signal 9) gần micro-step 361. Đây là tiến trình bị buộc dừng, chưa đủ để kết luận hỏng máy hay chắc chắn hết RAM. RAM chạm giới hạn Docker 21 GiB là nguyên nhân nghi ngờ cần đối chiếu với cgroup/Docker.
 
-Nếu service đang chờ sau lỗi v10, supervisor lấy v11 và tự tạo campaign mới theo DEPLOYMENT_POLICY.json do fingerprint code đổi. Không cần bấm Stop run trên W&B hoặc chạy run.py thêm. Archive, dữ liệu giải nén, weights và checkpoint cũ được giữ. Log lượt mới phải có release v11 và `Activation storage: cpu`. Nếu lại OOM, log bổ sung ID mẫu và video_shape giúp chẩn đoán chính xác.
+V12 dùng `cpu_checkpoint`: lưu đầu vào ranh giới khối trên CPU, tính lại tensor trung gian từng khối khi backward, thay vì giữ toàn bộ chúng trong RAM. RNG được giữ cho recompute; buffer BatchNorm được sao chép để không cập nhật running statistics hai lần. WORKERS=0 và tắt pin/prefetch hạn chế số batch nằm trong RAM cùng lúc. Không đổi batch hiệu dụng, độ phân giải, nhãn, frame, dropout hoặc graph K; không tăng giới hạn RAM/CPU Docker và không dùng disk offload. Tốc độ có thể giảm. Chưa thể bảo đảm mọi mẫu đều vừa bộ nhớ; cần xác nhận bằng log lần chạy thật.
+
+EdgeConv xử lý tối đa 16 đồ thị độc lập mỗi nhóm, dùng cùng quy tắc trong train/eval và mọi chế độ lưu activation. Mỗi đồ thị giữ đủ node/cạnh; không chia trục thời gian của TSG, không chia BatchNorm và không cắt video/nhãn. Cách tính theo nhóm giữ công thức toán học; so với phép nhân batched lớn của v11 có thể khác làm tròn CUDA, nên không tuyên bố bitwise giống checkpoint cũ. Số đo kiểm tra tổng hợp được ghi trong `reports/VALIDATION.md`; không thay thế nghiệm thu trên máy cô hay dữ liệu thật.
+
+Nếu service đang chờ sau lỗi v11, supervisor lấy v12 sau khi bản sửa được publish và tự tạo campaign mới theo DEPLOYMENT_POLICY.json do fingerprint code đổi. Không cần bấm Stop run trên W&B hoặc chạy run.py thêm. Archive, dữ liệu giải nén, weights và checkpoint cũ được giữ. Log lượt mới phải có release `phoenix14t-cslr-bounded-activation-checkpoint-v12` và `Activation storage: cpu_checkpoint`. Nếu lại bị dừng, log có thêm dữ liệu cgroup/Docker để phân biệt giới hạn RAM với nguyên nhân khác; gửi phần cuối `live_log_tail.txt` và `diagnostic.json`. Không tự tăng giới hạn RAM để né lỗi.
 
 Các run supervisor là phiên giám sát CPU. Trạng thái Running không chứng minh GPU đang train: kiểm tra `status.json/status`, `supervisor.json/outcome` và heartbeat mới nhất trong Summary. V11 thêm xử lý SIGTERM và SDK finish để kết thúc phiên observer khi cập nhật; phiên cũ v9/v10 có thể còn trạng thái lỗi thời. Không thể bảo đảm gửi trạng thái cuối nếu bị kill cứng hoặc mất mạng.
 
@@ -74,8 +78,8 @@ Các run supervisor là phiên giám sát CPU. Trạng thái Running không ch�
 
 - Tải dở: dữ liệu đã ghi trong `.part` nằm trên ổ; sau khi bật lại, tiếp tục nếu server hỗ trợ.
 - Giải nén dở: có thể phải giải nén lại từ archive đã tải, không cần tải lại archive còn nguyên.
-- Huấn luyện cấu hình đơn: checkpoint mặc định mỗi200 optimizer updates và cuối epoch; optimizer/scheduler/scaler/RNG/cursor nằm trong payload. Một backend local riêng giữ ít nhất hai thế hệ checkpoint có checksum. Khi bắt đầu lại, restore thử bản commit mới nhất; lỗi checksum thì thử thế hệ trước. Nếu mọi bản đều lỗi, dừng để xử lý, không tự train lại từ đầu.
+- Từ v12, huấn luyện cấu hình đơn qua `run_local.py` lưu checkpoint mặc định mỗi 50 optimizer updates và cuối epoch. Với máy cô hiện tại (1 GPU, micro-batch 1, accumulation 6), 50 updates tương ứng 300 micro-step. Notebook/suite vẫn mặc định 200 updates để hạn chế thời gian upload checkpoint Drive. Optimizer/scheduler/scaler/RNG/cursor nằm trong payload. Một backend local riêng giữ ít nhất hai thế hệ checkpoint có checksum. Khi bắt đầu lại, restore thử bản commit mới nhất; lỗi checksum thì thử thế hệ trước. Nếu mọi bản đều lỗi, dừng để xử lý, không tự train lại từ đầu.
 - Chỉ những gì đã lưu thành công được phục hồi; phần sau checkpoint phải chạy lại. Mất điện khi đang ghi, hỏng filesystem/ổ đĩa vẫn có thể làm mất dữ liệu. Không thể bảo đảm phục hồi mọi sự cố phần cứng. Giữ backup checkpoint quan trọng khi đủ chỗ.
 - Lượt đang chạy hoặc bị ngắt sẽ được tiếp tục khi khởi động lại. Lượt đã hoàn tất không được tự coi là một thí nghiệm mới. Lượt bị lỗi được ghi nhận sẽ chờ bản sửa, không tự chạy cùng lỗi vô hạn.
 
-Chưa nghiệm thu systemd/khởi động lại/tắt điện thật trên máy cô. Kiểm tra status, log và checkpoint sau lần khởi động đầu tiên; không thử rút điện để kiểm tra tính năng này.
+Đã xác nhận service systemd chạy trên máy cô; chưa nghiệm thu khởi động lại/tắt điện thật. Kiểm tra status, log và checkpoint sau lần khởi động đầu tiên; không thử rút điện để kiểm tra tính năng này.

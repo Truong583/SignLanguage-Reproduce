@@ -5,6 +5,7 @@ frame-major throughout. No edges may cross videos or nonadjacent frames.
 """
 import torch
 from torch import nn
+from .activation_checkpoint import checkpoint_call
 
 
 class GCN(nn.Module):
@@ -41,10 +42,23 @@ class EdgeConv(nn.Module):
         self.mlp = nn.Sequential(nn.Linear(2*channels,channels),nn.ReLU())
 
     def forward(self, x, edges):
+        # Batch axis contains independent graphs, unlike the node axis of TSG.
+        # Keep the same grouping in every storage mode and in evaluation: CUDA
+        # GEMM rounding can depend on shape, affecting downstream kNN ties.
+        if x.shape[0]>16:
+            return torch.cat([checkpoint_call(self._forward,part,edges,
+                modules=self.mlp,enabled=getattr(self,'activation_checkpoint',False) and self.training)
+                for part in x.split(16,dim=0)],dim=0)
+        return self._forward(x,edges)
+
+    def _forward(self, x, edges):
         src,dst = edges
         center = x.index_select(-2,dst)
         neighbor = x.index_select(-2,src)
-        messages = self.mlp(torch.cat([center,neighbor-center],dim=-1))
+        inputs = torch.cat([center,neighbor-center],dim=-1)
+        del center,neighbor
+        messages = self.mlp(inputs)
+        del inputs
         output = torch.full_like(x,-torch.inf,dtype=messages.dtype)
         index = dst[None,:,None].expand(x.shape[0],-1,x.shape[-1])
         output = output.scatter_reduce(1,index,messages,reduce='amax',include_self=True)

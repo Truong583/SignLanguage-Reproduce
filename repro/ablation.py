@@ -8,6 +8,7 @@ from torch.nn import functional as F
 from .graphs import EdgeConv, GCN, HierarchicalGraph, TemporalGraph, temporal_edges
 from .vendor.backbone import ResNet, BasicBlock
 from .vendor.torch_vertex import Grapher
+from .activation_checkpoint import checkpoint_call
 
 
 def distances(x, y, kind="euclidean"):
@@ -283,18 +284,19 @@ class AblationBackbone(ResNet):
 
     def forward(self, video):
         b, _, t, _, _ = video.shape
-        x = self.relu(self.bn1(self.conv1(video)))
+        x = self._call(lambda value:self.relu(self.bn1(self.conv1(value))),video,
+                       modules=(self.conv1,self.bn1,self.relu))
         high = x.transpose(1, 2).flatten(0, 1)
-        x = self.maxpool(x)
+        x = self._call(self.maxpool,x)
         for scale, stage in zip((4, 8, 16, 32), (self.layer1, self.layer2, self.layer3, self.layer4)):
-            x = stage(x); _, c, _, h, w = x.shape
+            x = self._stage(stage,x); _, c, _, h, w = x.shape
             low = x.transpose(1, 2).reshape(b*t, c, h, w)
             for kind in self.order:
                 key = f"s{scale}_{kind}"
                 if key not in self.blocks: continue
                 block = self.blocks[key]
-                if kind == "hsg": low = block(high, low)
-                else: low = low + self.gains[key] * (block(low, b) if kind == "tsg" else block(low))
+                if kind == "hsg": low = self._call(block,high,low)
+                else: low = low + self.gains[key] * (self._call(block,low,b) if kind == "tsg" else self._call(block,low))
             high = low
             x = low.reshape(b, t, c, h, w).transpose(1, 2)
         return F.adaptive_avg_pool2d(low, 1).flatten(1)
@@ -339,8 +341,11 @@ class PVIGTiny(nn.Module):
 
     def forward(self, video):
         x = video.transpose(1,2).flatten(0,1)
-        x = self.stem.convs(x) + self.pos_embed
-        return F.adaptive_avg_pool2d(self.backbone(x), 1).flatten(1)
+        active=getattr(self,'activation_checkpoint',False)
+        x = checkpoint_call(self.stem.convs,x,modules=self.stem.convs,enabled=active) + self.pos_embed
+        for block in self.backbone:
+            x=checkpoint_call(block,x,modules=block,enabled=active)
+        return F.adaptive_avg_pool2d(x, 1).flatten(1)
 
 
 class SwinFrames(nn.Module):
@@ -351,4 +356,8 @@ class SwinFrames(nn.Module):
 
     def forward(self, video):
         x = video.transpose(1,2).flatten(0,1)
-        return self.model.avgpool(self.model.permute(self.model.norm(self.model.features(x)))).flatten(1)
+        active=getattr(self,'activation_checkpoint',False)
+        for stage in self.model.features:
+            for block in stage if isinstance(stage,nn.Sequential) else (stage,):
+                x=checkpoint_call(block,x,modules=block,enabled=active)
+        return self.model.avgpool(self.model.permute(self.model.norm(x))).flatten(1)
