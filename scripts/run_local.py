@@ -39,13 +39,11 @@ def code_hash():
 
 
 def prepare(cfg):
-    from scripts.fetch_phoenix import ensure_phoenix, valid_layout
+    from scripts.fetch_phoenix import ensure_phoenix, valid_layout, check_prepare_space
     data_root = Path(cfg["data_root"])
     if data_root.as_posix() == "data/phoenix14t":
         if not valid_layout(data_root):
-            free = shutil.disk_usage(data_root.parent).free / 1024**3
-            if free < 150:
-                raise RuntimeError(f"Only {free:.1f} GiB free. Reserve at least 150 GiB before downloading/extracting PHOENIX14T.")
+            check_prepare_space(data_root,ROOT/'data/phoenix-2014-T.v3.tar.gz')
         ensure_phoenix(data_root, ROOT / "data/phoenix-2014-T.v3.tar.gz")
         manifests = [Path(cfg[s]) for s in ("train", "dev", "test")]
         if not all(p.is_file() for p in manifests):

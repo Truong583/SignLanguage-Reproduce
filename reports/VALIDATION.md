@@ -1,5 +1,11 @@
 # Báo cáo kiểm tra — cập nhật 2026-10-08
 
+## Sửa timeout tải PHOENIX
+
+- Log người dùng xác nhận GPU probe đã thành công, nhưng đọc HTTP archive PHOENIX bị TimeoutError trước training. Tải dở vẫn nằm trong data/*.part. Downloader thêm tối đa8 lượt thử, timeout180s, backoff5/10/20/40/60s; giữ byte đã ghi, kiểm tra Content-Range trước append, server trả200 thì tải lại thay vì ghi trùng. Incomplete download được giữ để thử tiếp; lỗi HTTP vĩnh viễn hoặc range lệch dừng.
+- Giảm khối đọc1MiB, in tiến độ theo30s hoặc1GiB. Guard150GiB cho chuẩn bị được tính bằng free + archive/.part đã chiếm trên cùng filesystem; vẫn yêu cầu ít nhất10GiB trống và giữ guard riêng trước giải nén. Không coi dung lượng file đã cache là chỗ trống thật.
+- **48 passed, 1.62 giây** (`runs/pytest-download-retry`): phản hồi mạng giả kiểm tra timeout sau ghi/truncated body, range bị bỏ qua/range lệch, giới hạn retry, HTTP404, budget giữ filepartial, cùng các tests Docker/update trước đó. Chưa tải archive thật hoặc nghiệm thu kết nối RWTH/Drive tại laptop; cần log máy cô để xác nhận.
+
 ## Sửa Docker build từ log máy cô
 
 - Log máy Ubuntu 22.04 của người dùng xác nhận pip install hoàn tất nhưng pip check thất bại với `ninja 1.11.1.1 is not supported on this platform`; chưa bắt đầu training. Đây là lỗi kiểm tra wheel trong image nền, không phải thông báo mất mạng.

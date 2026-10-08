@@ -4,42 +4,83 @@ import os
 import shutil
 import tarfile
 import time
+import re
+import http.client
+import urllib.error
 import urllib.request
 
 URL="https://www-i6.informatik.rwth-aachen.de/ftp/pub/rwth-phoenix/2016/phoenix-2014-T.v3.tar.gz"
 
-def download_resumable(url: str, archive: Path) -> None:
+class IncompleteDownload(IOError): pass
+
+
+def download_resumable(url: str, archive: Path, attempts=8) -> None:
+    archive=Path(archive)
+    if attempts<1: raise ValueError('attempts must be positive')
+    for attempt in range(attempts):
+        try:
+            _download_once(url,archive)
+            return
+        except (TimeoutError,ConnectionError,urllib.error.URLError,http.client.IncompleteRead,
+                http.client.RemoteDisconnected,IncompleteDownload) as exc:
+            if isinstance(exc,urllib.error.HTTPError) and exc.code not in {408,429,500,502,503,504}: raise
+            if attempt+1==attempts:
+                print('Download interrupted after bounded retries. Partial file retained; rerun to resume.',flush=True)
+                raise
+            delay=min(5*2**attempt,60)
+            print(f'Download connection interrupted ({type(exc).__name__}); retry {attempt+2}/{attempts} in {delay}s, keeping partial data.',flush=True)
+            time.sleep(delay)
+
+
+def _download_once(url: str, archive: Path) -> None:
     archive.parent.mkdir(parents=True,exist_ok=True)
     partial=archive.with_name(archive.name+".part")
     offset=partial.stat().st_size if partial.exists() else 0
     request=urllib.request.Request(url,headers={"User-Agent":"MixSignGraph-reproduction/1.0",**({"Range":f"bytes={offset}-"} if offset else {})})
-    try:
-        response=urllib.request.urlopen(request,timeout=90)
-        if offset and response.status!=206:
-            response.close(); partial.unlink(missing_ok=True); offset=0
-            request=urllib.request.Request(url,headers={"User-Agent":"MixSignGraph-reproduction/1.0"})
-            response=urllib.request.urlopen(request,timeout=90)
-        total=response.headers.get("Content-Length")
-        total=int(total)+offset if total and total.isdigit() else None
-        mode="ab" if offset else "wb"
-        last_report=offset
-        with response,partial.open(mode) as out:
+    print(f'Dataset download: starting at {offset/1024**3:.2f} GiB (cached partial).',flush=True)
+    try: response=urllib.request.urlopen(request,timeout=180)
+    except urllib.error.HTTPError as exc:
+        match=re.fullmatch(r'bytes \*/(\d+)',exc.headers.get('Content-Range','')) if exc.code==416 else None
+        if match and offset==int(match[1]) and offset>0:
+            exc.close(); partial.replace(archive); return
+        raise
+    with response:
+        if response.status==200:
+            if offset: print('Server did not accept Range; restarting this archive download.',flush=True)
+            offset=0; mode='wb'
+            length=response.headers.get('Content-Length')
+            total=int(length) if length and length.isdigit() else None
+        elif response.status==206:
+            match=re.fullmatch(r'bytes (\d+)-(\d+)/(\d+)',response.headers.get('Content-Range',''))
+            if not match or int(match[1])!=offset or not offset<=int(match[2])<int(match[3]):
+                raise ValueError('Invalid Content-Range; cached partial retained without appending a mismatched response.')
+            total=int(match[3]); mode='ab'
+        else: raise ValueError(f'Unexpected download HTTP status: {response.status}')
+        last_report=offset; last_time=time.monotonic()
+        with partial.open(mode) as out:
             while True:
-                chunk=response.read(8*1024*1024)
+                chunk=response.read(1024*1024)
                 if not chunk: break
                 out.write(chunk)
                 current=out.tell()
-                if current-last_report>=1024**3:
+                if current-last_report>=1024**3 or time.monotonic()-last_time>=30:
                     size=f"/{total/1024**3:.1f} GiB" if total else ""
                     print(f"Dataset download: {current/1024**3:.1f} GiB{size}",flush=True)
                     last_report=current
+                    last_time=time.monotonic()
             out.flush(); os.fsync(out.fileno())
-        if total and partial.stat().st_size!=total:
-            raise IOError(f"Incomplete download: got {partial.stat().st_size} of {total} bytes; rerun to resume")
-        partial.replace(archive)
-    except Exception:
-        print(f"Download interrupted. Partial file retained at {partial}; rerun to resume.",flush=True)
-        raise
+    if total and partial.stat().st_size!=total:
+        raise IncompleteDownload(f'Incomplete download: got {partial.stat().st_size} of {total} bytes')
+    partial.replace(archive)
+
+
+def check_prepare_space(data_root,archive,minimum_gib=150):
+    data_root=Path(data_root); archive=Path(archive)
+    free=shutil.disk_usage(data_root.parent).free
+    cached=archive if archive.is_file() else archive.with_name(archive.name+'.part')
+    credit=cached.stat().st_size if cached.is_file() and not cached.is_symlink() and cached.stat().st_dev==data_root.parent.stat().st_dev else 0
+    if free<10*1024**3 or free+credit<minimum_gib*1024**3:
+        raise RuntimeError(f'Not enough preparation space: {free/1024**3:.1f} GiB free, {credit/1024**3:.1f} GiB archive already stored; reserve {minimum_gib} GiB total before preparation.')
 
 def valid_layout(root: Path) -> bool:
     manual=root/"annotations"/"manual"

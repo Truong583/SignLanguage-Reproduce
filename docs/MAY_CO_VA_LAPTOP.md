@@ -39,6 +39,8 @@ Nhập tên tài khoản/team W&B và API key W&B khi được hỏi. Chỉ repo
 
 Nếu archive PHOENIX đã có trên Drive: tải một lần xuống máy cô và đặt ở **`data/phoenix-2014-T.v3.tar.gz`**. Không giải nén bằng tay. Nếu chưa có, chương trình tự tải bản chính thức RWTH. Dữ liệu giải nén, manifests và weights được giữ local để các lượt sau không tải lại. Cần ít nhất 150 GiB trống cho chuẩn bị; còn phải chừa dung lượng Docker và checkpoint của 68 lượt. Đừng bắt đầu nếu ổ không đủ cho toàn chiến dịch.
 
+Nếu RWTH timeout, downloader giữ `.part` và tự thử lại có giới hạn8 lần. Lần tiếp theo tiếp tục byte đã ghi khi server hỗ trợ HTTP Range; nếu server bỏ qua Range thì phải tải lại archive. Không xóa `.part` để sửa lỗi mạng. Guard chuẩn bị có tính archive đã lưu, còn guard giải nén vẫn kiểm tra dung lượng trống thật. Nếu đã hết retry, supervisor chờ bản sửa hoặc cập nhật thủ công; không tự train lại cùng bản lỗi vô hạn.
+
 ## 2. Lệnh chạy hàng ngày trên máy cô
 
 ```bash
