@@ -58,8 +58,14 @@ def supervise(workspace,initial,args):
         if log: log.close()
         image=image_name(source,base)
         # Cached build, no test or training pass. Prevent simultaneous manual update.
-        with OperationLock(workspace):
-            subprocess.run(['docker','build','--build-arg','BASE_IMAGE='+base,'--build-arg','RUN_TESTS=0','-t',image,'.'],cwd=source,check=True)
+        recorder=Recorder(workspace,source); recorder.stage='monitor_docker_build'
+        try:
+            with OperationLock(workspace):
+                recorder.call(['docker','build','--build-arg','BASE_IMAGE='+base,'--build-arg','RUN_TESTS=0','-t',image,'.'],cwd=source)
+            recorder.finish(0)
+        except BaseException as exc:
+            recorder.finish(130 if isinstance(exc,KeyboardInterrupt) else getattr(exc,'returncode',1),exc)
+            raise
         log=(workspace/'runs/telemetry/monitor.log').open('a',encoding='utf-8')
         observer=subprocess.Popen(monitor_command(workspace,source,image,name),stdout=log,stderr=subprocess.STDOUT)
         observer_revision=identity(source)
@@ -72,11 +78,23 @@ def supervise(workspace,initial,args):
         try:
             while True:
                 source=active_release(workspace); revision=identity(source)
-                try: observer_start(source)
-                except (OSError,subprocess.CalledProcessError) as exc:
-                    status('monitor_setup_failed',error=redact(str(exc)))
-                    print('Monitor setup failed; retrying in 60 seconds. See runs/telemetry/monitor.log.',flush=True)
-                    time.sleep(60); continue
+                failed_path=root/'monitor-build-failed.json'
+                failed=json.loads(failed_path.read_text()) if failed_path.exists() else {}
+                blocked=failed.get('revision')==revision
+                if not blocked:
+                    try: observer_start(source)
+                    except (OSError,subprocess.CalledProcessError) as exc:
+                        atomic_json(failed_path,{'revision':revision,'error':redact(str(exc))})
+                        print('Monitor/Docker setup failed. Diagnostics retained locally; waiting for a corrected GitHub revision. W&B cannot send logs until its image starts.',flush=True)
+                        blocked=True
+                if blocked:
+                    deadline=time.monotonic()+max(30,int(cfg.get('poll_seconds',300)))
+                    while time.monotonic()<deadline:
+                        status('waiting_for_monitor_fix')
+                        time.sleep(min(5,max(0,deadline-time.monotonic())))
+                    subprocess.run([sys.executable,str(source/'update.py'),'--if-new','--automatic','--repo',cfg['repo'],
+                      '--branch',cfg['branch'],'--base-image',base],env=env)
+                    continue
                 if should_run(state,revision):
                     state={'revision':revision,'outcome':'running'}; atomic_json(state_path,state); status('training')
                     process=subprocess.Popen([sys.executable,str(source/'run.py'),'--once','--base-image',base,*args],env=env,

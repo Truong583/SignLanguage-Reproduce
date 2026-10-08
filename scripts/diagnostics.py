@@ -28,6 +28,7 @@ def redact(text):
 def classify(text,exit_code):
     if exit_code==130: return {'category':'interrupted','confidence':'high','next_step':'Rerun the same command to restore the saved checkpoint.'}
     patterns=[
+      ('package_platform',r'is not supported on this platform','Reinstall a compatible wheel inside the Docker image; retain pip check.'),
       ('cuda_oom',r'CUDA out of memory|OutOfMemoryError','Use more VRAM; do not silently change the paper recipe.'),
       ('nonfinite_loss',r'Nonfinite loss|(?:loss\s*[:=]\s*)(?:nan|[+-]?inf)\b','Inspect loss, precision and data; review whether prior training is valid.'),
       ('ctc_alignment',r'CTC alignment impossible|Impossible CTC alignment','Inspect the named sample, labels, frame lengths and augmentation.'),

@@ -8,7 +8,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
     HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HOME=/tmp
 WORKDIR /opt/signlanguage
 COPY requirements-repro.txt .
-RUN python -m pip install --no-cache-dir -r requirements-repro.txt \
+RUN python -m pip install --no-cache-dir --only-binary=:all: --force-reinstall --no-deps ninja==1.11.1.3 \
+    && python -m pip install --no-cache-dir -r requirements-repro.txt \
     && python -m pip check \
     && python -m pip freeze > /opt/python-environment.lock
 COPY repro ./repro

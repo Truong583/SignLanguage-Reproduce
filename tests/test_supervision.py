@@ -119,6 +119,7 @@ def test_supervisor_waits_after_failure_and_updates_only_after_worker_exit(tmp_p
         clock[0]+=seconds
         if len(updates)>=2: raise KeyboardInterrupt
     monkeypatch.setattr(module.subprocess,'Popen',popen); monkeypatch.setattr(module.subprocess,'run',run)
+    monkeypatch.setattr(module.Recorder,'call',lambda self,*a,**k:0)
     monkeypatch.setattr(module.time,'sleep',sleep); monkeypatch.setattr(module.time,'monotonic',lambda:clock[0])
     # Test changes no process-global signal handler.
     monkeypatch.setattr(module.signal,'signal',lambda *a:None)
@@ -126,4 +127,47 @@ def test_supervisor_waits_after_failure_and_updates_only_after_worker_exit(tmp_p
     assert len(workers)==1 and len(updates)==2
     assert json.loads((root/'supervisor-state.json').read_text())['outcome']=='failed'
     reports=list((tmp_path/'runs/diagnostics').glob('*/diagnostic.json'))
-    assert reports and json.loads(reports[0].read_text())['stage']=='worker_exit'
+    assert any(json.loads(p.read_text())['stage']=='worker_exit' for p in reports)
+
+
+@pytest.mark.parametrize('recover',[False,True])
+def test_failed_monitor_build_waits_for_updates_and_never_rebuilds_same_revision(tmp_path,monkeypatch,recover):
+    import subprocess
+    import scripts.supervisor as module
+    old=tmp_path/'old'; old.mkdir(); (old/'BUNDLE_SHA256.json').write_text('{}')
+    new=tmp_path/'new'; new.mkdir(); (new/'BUNDLE_SHA256.json').write_text('{"fixed":true}')
+    root=tmp_path/'.updates'; root.mkdir()
+    (root/'machine.json').write_text(json.dumps({'base_image':'base','repo':'repo','branch':'main','poll_seconds':30}))
+    active=[old]; clock=[0]; builds=[]; workers=[]; updates=[]
+    monkeypatch.setattr(module,'active_release',lambda w:active[0])
+    def build(self,command,**kwargs):
+        builds.append(kwargs['cwd'])
+        if kwargs['cwd']==old:
+            self.line('ninja 1.11.1.1 is not supported on this platform\n')
+            raise subprocess.CalledProcessError(1,command)
+        return 0
+    class Process:
+        def __init__(self,worker): self.returncode=1 if worker else None
+        def poll(self): return self.returncode
+        def wait(self,timeout=None): self.returncode=0; return 0
+    def popen(command,**kwargs):
+        worker=command[0]!='docker'
+        if worker: workers.append(command)
+        return Process(worker)
+    def run(command,**kwargs):
+        if '--if-new' in command:
+            updates.append(command)
+            if recover: active[0]=new
+        return type('Result',(),{'returncode':0})()
+    def sleep(seconds):
+        clock[0]+=seconds
+        if len(updates)>=2: raise KeyboardInterrupt
+    monkeypatch.setattr(module.Recorder,'call',build)
+    monkeypatch.setattr(module.subprocess,'Popen',popen); monkeypatch.setattr(module.subprocess,'run',run)
+    monkeypatch.setattr(module.time,'sleep',sleep); monkeypatch.setattr(module.time,'monotonic',lambda:clock[0])
+    monkeypatch.setattr(module.signal,'signal',lambda *a:None)
+    assert module.supervise(tmp_path,old,[])==130
+    assert builds==([old,new] if recover else [old])
+    assert len(workers)==(1 if recover else 0) and len(updates)==2
+    reports=[json.loads(p.read_text()) for p in (tmp_path/'runs/diagnostics').glob('*/diagnostic.json')]
+    assert any(r['stage']=='monitor_docker_build' and r['exit_code']==1 for r in reports)

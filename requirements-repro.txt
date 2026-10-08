@@ -1,4 +1,5 @@
 # PyTorch and torchvision come as a matched pair from the Docker base image.
+ninja==1.11.1.3
 numpy==1.26.4
 Pillow==10.4.0
 PyYAML==6.0.2

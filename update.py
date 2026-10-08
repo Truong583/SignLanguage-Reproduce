@@ -203,6 +203,7 @@ def main():
                            '-t',image_name(candidate,args.base_image),'.'],cwd=candidate)
             if args.new_campaign: cfg['campaign']=args.new_campaign
             activate(WORKSPACE,new,old,cfg)
+            (root/'monitor-build-failed.json').unlink(missing_ok=True)
             recorder.stage='activated'; recorder.finish(0)
             print('Update activated. Start with python run.py. Roll back with python update.py --rollback.')
         except BaseException as exc:

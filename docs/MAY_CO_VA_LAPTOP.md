@@ -51,6 +51,8 @@ Chạy ở **máy Linux của cô**, không chạy trên laptop để train. M�
 
 ## 3. Khi có lỗi
 
+Nếu lỗi ở Docker build trước khi W&B container khởi động, diagnostic chỉ lưu local tại `runs/diagnostics`; chưa thể gửi lên W&B. Supervisor giữ log và chờ commit sửa, không dựng lại cùng revision mãi. Khi cập nhật thủ công từ laptop: dừng supervisor, `git pull --ff-only`, rồi `python3 update.py --automatic` để kích hoạt bản mới; chỉ pull không thay bản đang ghim trong `.updates/active.json`. Khi cập nhật thành công, chạy lại lệnh train đã chọn (ví dụ `python3 run.py --single`).
+
 1. Trong W&B, mở project của bạn. Run loại `observer` chứa trạng thái, loss/WER theo epoch, `live_log_tail.txt` và artifact loại `runtime-error` gồm `diagnostic.json`, `log_tail.txt`. Bật nhận W&B alerts nếu muốn có thông báo. Có Internet thì log thường xuất hiện sau khoảng 30 giây cộng thời gian đồng bộ; mạng lỗi có thể chậm hơn.
 2. Bạn tải hai file lỗi từ W&B rồi gửi trợ lý ở laptop; không cần vào máy cô lấy log. Trợ lý không tự nhận được dữ liệu W&B nếu chưa được bạn cung cấp/quyền kết nối.
 3. Sửa code trên laptop rồi chạy **`python publish.py`**. Máy cô tự lấy bản mới khi rảnh, dựng Docker dùng cache, kiểm tra checksum/cú pháp/khả năng tiếp tục rồi chạy tiếp.

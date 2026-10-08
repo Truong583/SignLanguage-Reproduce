@@ -1,5 +1,12 @@
 # Báo cáo kiểm tra — cập nhật 2026-10-08
 
+## Sửa Docker build từ log máy cô
+
+- Log máy Ubuntu 22.04 của người dùng xác nhận pip install hoàn tất nhưng pip check thất bại với `ninja 1.11.1.1 is not supported on this platform`; chưa bắt đầu training. Đây là lỗi kiểm tra wheel trong image nền, không phải thông báo mất mạng.
+- Dockerfile cài lại wheel **ninja1.11.1.3** bằng `--only-binary=:all: --force-reinstall --no-deps` trước requirements; giữ nguyên pip check. Wheel x86_64 từ PyPI chính thức có hai Tag riêng `py3-none-manylinux_2_12_x86_64` và `py3-none-manylinux2010_x86_64`; metadata/tag đã được đọc xác nhận. Không sửa code tính toán, driver, PyTorch/CUDA hay bỏ kiểm tra phụ thuộc.
+- Docker build của observer lưu log/diagnostic local. Lỗi được đánh dấu theo revision; không tự dựng lại cùng bản lỗi. Trong khi chờ vẫn kiểm tra GitHub; bản sửa mới có thể được kích hoạt. Sau khi observer hoạt động, diagnostic tồn đọng mới có thể gửi W&B. Không hứa gửi W&B khi image chưa dựng được.
+- **39 passed, 1.90 giây** trong nhóm update/orchestration/extraction (`runs/pytest-ninja-build-recovery`). Thêm hai tình huống giả: lỗi build chờ update, và có bản sửa mới thì dựng thành công trước khi gọi trainer. Chưa build Linux image có bản sửa này tại laptop; máy cô cần chạy lại để xác nhận pip check và GPU probe thật.
+
 ## Repo Public và API key W&B mới
 
 - Người dùng chủ động chuyển repository Public. Setup tự nhận diện Public, không hỏi/lưu GitHub token, còn updater bỏ header GitHub auth; W&B project vẫn được kiểm tra riêng tư. Bộ tests liên quan **37 passed, 2.35 giây** (`runs/pytest-public-repo`). Bao gồm Public/Private setup, khóa/snapshot, redaction key mới, mount và orchestration. Không có CI trên server.
