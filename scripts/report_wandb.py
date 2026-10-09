@@ -51,6 +51,58 @@ def send_live_log(run,root,spool,status):
     return True
 
 
+def archive_console(run,root,spool,status,state,active_source=None):
+    """Upload append-only sanitized console chunks independently of the laptop.
+
+    Immutable files let a viewer recover logs after being offline. This reads
+    only the active diagnostic console; dataset/model mounts are never scanned.
+    Cursor persistence occurs after run.save has queued the chunk. New observer
+    sessions restart the cursor and upload their own archive into their own run.
+    """
+    candidate=live_console(root,status.get('diagnostic_directory',''))
+    if candidate is None: return False
+    source=candidate.parent.name
+    if not re.fullmatch(r'[A-Za-z0-9_-]+',source): return False
+    streams=state.setdefault('console_archive',{})
+    stream=streams.setdefault(source,{'offset':0,'chunks':[]})
+    offset=int(stream['offset'])
+    if candidate.stat().st_size<offset: raise RuntimeError('Console archive source was truncated')
+    for _ in range(2):
+        with candidate.open('rb') as handle:
+            handle.seek(offset); content=handle.read(256*1024)
+        boundary=content.rfind(b'\n')+1
+        if not boundary: break
+        content=content[:boundary]
+        name=f'console_archive/{source}/{offset:012d}.txt'
+        target=Path(spool)/name; target.parent.mkdir(parents=True,exist_ok=True)
+        text=redact(content.decode('utf-8',errors='replace'))
+        temporary=target.with_suffix('.tmp'); temporary.write_text(text,encoding='utf-8',newline=''); os.replace(temporary,target)
+        run.save(str(target),base_path=str(spool),policy='now')
+        stream['chunks'].append(name); offset+=len(content); stream['offset']=offset
+    index=Path(spool)/'console_archive/index.json'
+    atomic_json(index,{'version':1,'active':active_source or source,'streams':streams})
+    run.save(str(index),base_path=str(spool),policy='now')
+    return True
+
+
+def archive_saved_consoles(run,root,spool,status,state):
+    """Backfill one older host console per poll, without blocking training."""
+    active=live_console(root,status.get('diagnostic_directory',''))
+    if active is None: return
+    for candidate in sorted((Path(root)/'diagnostics').glob('*/console.log'),reverse=True):
+        if candidate==active or not contained_file(candidate,root,64*1024*1024): continue
+        offset=state.get('console_archive',{}).get(candidate.parent.name,{}).get('offset',0)
+        if candidate.stat().st_size<=offset: continue
+        # A terminated source can end in an incomplete line. Complete log lines
+        # are archived; do not let one such tail starve all older consoles.
+        with candidate.open('rb') as handle:
+            handle.seek(offset); peek=handle.read(256*1024)
+        if b'\n' not in peek: continue
+        archive_console(run,root,spool,{'diagnostic_directory':'diagnostics/'+candidate.parent.name},
+                        state,active_source=active.parent.name)
+        break
+
+
 def scan(run,root,spool,state):
     # Exact names and containment checks; do not glob arbitrary files into artifacts.
     histories=set(root.glob('*/history.jsonl')) | set(root.glob('*/*/history.jsonl'))
@@ -120,6 +172,7 @@ def observe(root,spool,cfg,key,wandb):
                 # Refill a new session from source history. The previous SDK may
                 # have queued metrics offline immediately before a power loss.
                 state['history']={}
+                state['console_archive']={}
             for filename in ('supervisor.json','status.json'):
                 path=root/filename
                 if not contained_file(path,root,128*1024): continue
@@ -129,6 +182,8 @@ def observe(root,spool,cfg,key,wandb):
                 if filename=='status.json':
                     run.log({'seconds_without_console_output':value.get('seconds_without_console_output',0)})
                     send_live_log(run,root,spool,value)
+                    archive_console(run,root,spool,value,state)
+                    archive_saved_consoles(run,root,spool,value,state)
             scan(run,root,spool,state)
             atomic_json(state_file,state)
             atomic_json(spool/'health.json',{'status':'connected','heartbeat_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),

@@ -1,5 +1,5 @@
 {
-  "version": "phoenix14t-cslr-bounded-activation-checkpoint-v12",
+  "version": "phoenix14t-cslr-durable-console-monitor-v13",
   "experiments": 68,
   "quantitative_configurations": 67,
   "qualitative_reference_configurations": 1,

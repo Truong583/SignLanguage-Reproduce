@@ -83,3 +83,18 @@ Các run supervisor là phiên giám sát CPU. Trạng thái Running không ch�
 - Lượt đang chạy hoặc bị ngắt sẽ được tiếp tục khi khởi động lại. Lượt đã hoàn tất không được tự coi là một thí nghiệm mới. Lượt bị lỗi được ghi nhận sẽ chờ bản sửa, không tự chạy cùng lỗi vô hạn.
 
 Đã xác nhận service systemd chạy trên máy cô; chưa nghiệm thu khởi động lại/tắt điện thật. Kiểm tra status, log và checkpoint sau lần khởi động đầu tiên; không thử rút điện để kiểm tra tính năng này.
+
+
+## V13: laptop đóng vẫn giữ lịch sử train/dev
+
+Viewer trên laptop ở `D:\Chay_Paper\SignLanguage-Monitor` lưu điểm loss, checkpoint, tốc độ đã quan sát, tổng kết epoch và log đã nhận. Lịch sử là dữ liệu cục bộ trong `.monitor-cache`, không phải bộ nhớ tạm của tab trình duyệt. Bản cũ có cache loss được đọc tiếp, không xóa hay khởi tạo lại dữ liệu người dùng.
+
+W&B history chứa loss train trung bình và WER dev sau mỗi epoch; viewer truy vấn lại lịch sử thật theo trang, kể cả laptop đã tắt. Các campaign khác nhau được chọn riêng trong bảng tổng kết, không nối số đo của chúng thành một thí nghiệm. Run observer mới vẫn có danh sách lịch sử riêng; khi tự chuyển run, có thể chọn run cũ để xem tiếp.
+
+V13 bổ sung observer gửi các đoạn console đã lọc thông tin xác thực vào `console_archive/<diagnostic-id>/<byte-offset>.txt` và manifest `console_archive/index.json`. Mỗi poll đọc tối đa hai khối 256 KiB cho console đang hoạt động và hai khối cho một console cũ còn trong `runs/diagnostics`. Cursor theo byte gốc; log UTF-8 giữ đủ dòng hoàn chỉnh. Mất mạng không xóa log host; sau khi kết nối/khởi động lại observer sẽ gửi lại. Không đọc hoặc gửi video, weights, checkpoint, key. Chỉ gửi vào project đã được kiểm tra Private/Team/Restricted theo guard có sẵn. Kho log có thể tăng dung lượng W&B và spool tương ứng; không đặt giữ dữ liệu vô hạn ở dịch vụ ngoài mà không tính quota.
+
+Khi observer V13 đã được nạp, laptop có thể tải các phần console phát sinh lúc nó tắt. Viewer có lựa chọn phiên log, lọc train/dev/epoch, xem phần cũ hơn và tải `.txt`. Console lịch sử còn trên ổ host cũng được tải dần; mất/hỏng/xóa log host thì không thể phục hồi từ code. Khi notebook/teacher dùng observer cũ chỉ gửi tail 32 KiB, không thể khôi phục toàn bộ log bị ghi đè từ W&B; viewer báo rõ phạm vi thu thập. V13 không bổ sung log từng video dev vào vòng đánh giá; bảng dev dùng kết quả tổng kết thật của epoch.
+
+Bản này không sửa `repro/`, config, dữ liệu, checkpoint hoặc thuật toán. Training fingerprint và recipe được đối chiếu với V12 và không đổi. Supervisor tiếp tục pin source khi worker đang chạy; không tự nạp V13 giữa lượt train. Máy cô nhận bản mới theo lịch cập nhật đã có sau khi worker kết thúc/dừng. Không cần dừng lượt hiện tại chỉ để cập nhật giao diện laptop. Cài viewer mới không có nghĩa observer trên máy cô đã được đổi. Muốn đổi observer ngay giữa lượt cần thao tác riêng trên máy cô; không có SSH nên không khẳng định đã làm từ laptop.
+
+Kiểm chứng: viewer 26 kiểm tra về persistence/readonly API, epoch backfill, cô lập run, giữ log và mất mạng; observer/background/supervision 43 kiểm tra qua. Truy vấn W&B chỉ đọc đã lấy được tổng kết epoch 1–7 của run người dùng; API key đọc từ vault không được in, ghi vào cache hoặc thay đổi. Các số đo này không phải kết quả cuối cùng của paper.
