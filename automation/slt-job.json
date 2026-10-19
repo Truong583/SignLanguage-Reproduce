@@ -1,1 +1,1 @@
-{"schema":1,"action":"idle","note":"Waiting for the verified SLT training job; do not resume old CSLR."}
+{"schema":1,"action":"run","job_id":"slt-audit-20261019-v3","commit":"84ceb248af1e4f417b71ae1e5916bdaea1d048a4","path":"automation/jobs/slt_audit_v3.sh","sha256":"13ef4236f2b9abc5e19b9081924cfba8be73c9cff98217bebd87cf5072d5de2b","timeout_minutes":45}
