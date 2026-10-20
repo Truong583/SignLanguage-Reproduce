@@ -1,1 +1,1 @@
-{"schema":1,"action":"run","job_id":"slt-audit-20261019-v3","commit":"84ceb248af1e4f417b71ae1e5916bdaea1d048a4","path":"automation/jobs/slt_audit_v3.sh","sha256":"13ef4236f2b9abc5e19b9081924cfba8be73c9cff98217bebd87cf5072d5de2b","timeout_minutes":45}
+{"schema":1,"action":"run","job_id":"slt-train-20261020-v1","commit":"6841760375b931efb03fc29a4448a8712408bb5e","path":"automation/jobs/slt_train_v1.sh","sha256":"2f89387b69de3780cc86acbe0273c6b9776f840dc8955e80522a3fffff59cd5f","timeout_minutes":10080}
