@@ -1,5 +1,7 @@
 # SLT dài trên máy cô
 
+**Yêu cầu mới: chạy đến hết epoch20 rồi dừng để quan sát dev.** Job `slt_train_stage20.sh` giữ nguyên mô hình, optimizer, lịch giảm LR20/35 và checkpoint cũ; chỉ đổi giới hạn phiên từ50 sang20. Không đánh giá test ở mốc20. Có thể resume từ `last.pt` đến50 bằng việc phát job mới khi người dùng yêu cầu. Mốc50 dưới đây là lịch đầy đủ ban đầu, hiện chưa được chạy tự động đến cuối.
+
 Luồng: laptop chuẩn bị bản sửa → GitHub chứa code và lệnh chạy ghim commit → dịch vụ `signlanguage-slt-worker.service` tải việc mới khi rảnh → Docker train → container riêng gửi log và metric tới W&B.
 
 - Dữ liệu, mBART và checkpoint CSLR gắn chỉ đọc.
