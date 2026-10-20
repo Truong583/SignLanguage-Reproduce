@@ -1,1 +1,1 @@
-{"schema":1,"action":"run","job_id":"slt-train-20261020-v1","commit":"6841760375b931efb03fc29a4448a8712408bb5e","path":"automation/jobs/slt_train_v1.sh","sha256":"2f89387b69de3780cc86acbe0273c6b9776f840dc8955e80522a3fffff59cd5f","timeout_minutes":10080}
+{"schema":1,"action":"stop","note":"Save current SLT progress before switching to requested epoch20 limit"}
